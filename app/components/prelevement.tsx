@@ -145,11 +145,12 @@ export default function Prelevement() {
   const totalAVenir = prelevements
     .filter((p) => !p.completed)
     .reduce((sum, p) => sum + p.amount, 0);
+
   const allCompleted = prelevements.every((p) => p.completed);
 
   if (!isLoaded) {
     return (
-      <div className="max-w-4xl mx-auto p-6 bg-background min-h-screen flex items-center justify-center">
+      <div className="max-w-4xl mx-auto p-4 sm:p-6 bg-background min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
           <p>Chargement...</p>
@@ -159,21 +160,24 @@ export default function Prelevement() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-6 bg-background min-h-screen">
+    <div className="max-w-4xl mx-auto p-4 sm:p-6 bg-background min-h-screen">
       <Card>
-        <CardHeader>
-          <div className="flex justify-between items-start">
-            <CardTitle className="text-2xl">Gestion des Prélèvements</CardTitle>
+        <CardHeader className="space-y-4">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
+            <CardTitle className="text-xl sm:text-2xl">
+              Gestion des Prélèvements
+            </CardTitle>
             <Button
               onClick={resetData}
               variant="outline"
               size="sm"
-              className="text-destructive bg-transparent"
+              className="text-destructive bg-transparent self-start sm:self-auto"
             >
               Réinitialiser
             </Button>
           </div>
-          <div className="flex items-center justify-between">
+
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="flex items-center space-x-2">
               <Checkbox
                 id="toggle-all"
@@ -190,16 +194,18 @@ export default function Prelevement() {
             <Button
               onClick={() => setShowAddForm(!showAddForm)}
               variant="outline"
+              size="sm"
             >
               <Plus className="w-4 h-4 mr-2" />
               Ajouter
             </Button>
           </div>
         </CardHeader>
-        <CardContent>
+
+        <CardContent className="space-y-4">
           {showAddForm && (
-            <div className="mb-6 p-4 border rounded-lg bg-muted/50">
-              <div className="grid grid-cols-4 gap-4 mb-4">
+            <div className="p-4 border rounded-lg bg-muted/50">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
                 <Input
                   placeholder="Titre"
                   value={newPrelevement.title}
@@ -235,45 +241,84 @@ export default function Prelevement() {
                     })
                   }
                 />
-                <div className="flex space-x-2">
-                  <Button onClick={addPrelevement} size="sm">
-                    <Check className="w-4 h-4" />
+                <div className="flex space-x-2 sm:col-span-1 lg:col-span-1">
+                  <Button
+                    onClick={addPrelevement}
+                    size="sm"
+                    className="flex-1 sm:flex-none"
+                  >
+                    <Check className="w-4 h-4 sm:mr-2" />
+                    <span className="hidden sm:inline">Valider</span>
                   </Button>
                   <Button
                     onClick={() => setShowAddForm(false)}
                     size="sm"
                     variant="outline"
+                    className="flex-1 sm:flex-none"
                   >
-                    <X className="w-4 h-4" />
+                    <X className="w-4 h-4 sm:mr-2" />
+                    <span className="hidden sm:inline">Annuler</span>
                   </Button>
                 </div>
               </div>
             </div>
           )}
 
-          <div className="space-y-2">
-            <div className="grid grid-cols-5 gap-4 p-3 bg-muted rounded-lg font-semibold text-muted-foreground">
-              <div>Titre</div>
-              <div>Jour</div>
-              <div>Montant</div>
-              <div>Statut</div>
-              <div>Actions</div>
-            </div>
+          {/* Desktop Table Header - Hidden on mobile */}
+          <div className="hidden lg:grid lg:grid-cols-5 gap-4 p-3 bg-muted rounded-lg font-semibold text-muted-foreground">
+            <div>Titre</div>
+            <div>Jour</div>
+            <div>Montant</div>
+            <div>Statut</div>
+            <div>Actions</div>
+          </div>
 
+          <div className="space-y-3">
             {prelevements
               .sort((a, b) => a.day - b.day)
               .map((prelevement) => (
                 <div
                   key={prelevement.id}
-                  className={`grid grid-cols-5 gap-4 p-3 rounded-lg border ${
+                  className={`border rounded-lg p-4 ${
                     prelevement.completed
-                      ? "bg-muted/50 text-muted-foreground line-through"
+                      ? "bg-muted/50 text-muted-foreground"
                       : "bg-card"
                   }`}
                 >
-                  <div className="font-medium">{prelevement.title}</div>
-                  <div>{prelevement.day.toString().padStart(2, "0")}</div>
-                  <div className="font-mono">
+                  {/* Mobile Layout */}
+                  <div className="lg:hidden space-y-3">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1 min-w-0">
+                        <h3
+                          className={`font-medium text-base ${
+                            prelevement.completed ? "line-through" : ""
+                          }`}
+                        >
+                          {prelevement.title}
+                        </h3>
+                        <div className="flex items-center gap-4 mt-1 text-sm text-muted-foreground">
+                          <span>
+                            Jour {prelevement.day.toString().padStart(2, "0")}
+                          </span>
+                          <span
+                            className={`font-mono font-medium ${
+                              prelevement.amount < 0 ? "text-green-600" : ""
+                            } ${
+                              prelevement.completed ? "" : "text-foreground"
+                            }`}
+                          >
+                            {prelevement.amount.toFixed(2)} €
+                          </span>
+                        </div>
+                      </div>
+                      <Checkbox
+                        checked={prelevement.completed}
+                        onCheckedChange={() =>
+                          togglePrelevement(prelevement.id)
+                        }
+                      />
+                    </div>
+
                     {editingId === prelevement.id ? (
                       <div className="flex items-center space-x-2">
                         <Input
@@ -281,68 +326,128 @@ export default function Prelevement() {
                           step="0.01"
                           value={editAmount}
                           onChange={(e) => setEditAmount(e.target.value)}
-                          className="w-20 h-8"
+                          className="flex-1"
                         />
                         <Button
                           onClick={() => saveEdit(prelevement.id)}
                           size="sm"
-                          className="h-8 w-8 p-0"
                         >
-                          <Check className="w-3 h-3" />
+                          <Check className="w-4 h-4" />
                         </Button>
                         <Button
                           onClick={cancelEdit}
                           size="sm"
                           variant="outline"
-                          className="h-8 w-8 p-0 bg-transparent"
                         >
-                          <X className="w-3 h-3" />
+                          <X className="w-4 h-4" />
                         </Button>
                       </div>
                     ) : (
-                      <span
-                        className={
-                          prelevement.amount < 0 ? "text-green-600" : ""
-                        }
-                      >
-                        {prelevement.amount.toFixed(2)} €
-                      </span>
+                      <div className="flex justify-end space-x-2">
+                        <Button
+                          onClick={() =>
+                            startEdit(prelevement.id, prelevement.amount)
+                          }
+                          size="sm"
+                          variant="ghost"
+                        >
+                          <Edit2 className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          onClick={() => deletePrelevement(prelevement.id)}
+                          size="sm"
+                          variant="ghost"
+                          className="text-destructive hover:text-destructive"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
                     )}
                   </div>
-                  <div>
-                    <Checkbox
-                      checked={prelevement.completed}
-                      onCheckedChange={() => togglePrelevement(prelevement.id)}
-                    />
-                  </div>
-                  <div className="flex space-x-2">
-                    {editingId !== prelevement.id && (
-                      <Button
-                        onClick={() =>
-                          startEdit(prelevement.id, prelevement.amount)
+
+                  {/* Desktop Layout */}
+                  <div className="hidden lg:grid lg:grid-cols-5 gap-4 items-center">
+                    <div
+                      className={`font-medium ${
+                        prelevement.completed ? "line-through" : ""
+                      }`}
+                    >
+                      {prelevement.title}
+                    </div>
+                    <div>{prelevement.day.toString().padStart(2, "0")}</div>
+                    <div className="font-mono">
+                      {editingId === prelevement.id ? (
+                        <div className="flex items-center space-x-2">
+                          <Input
+                            type="number"
+                            step="0.01"
+                            value={editAmount}
+                            onChange={(e) => setEditAmount(e.target.value)}
+                            className="w-24 h-8"
+                          />
+                          <Button
+                            onClick={() => saveEdit(prelevement.id)}
+                            size="sm"
+                            className="h-8 w-8 p-0"
+                          >
+                            <Check className="w-3 h-3" />
+                          </Button>
+                          <Button
+                            onClick={cancelEdit}
+                            size="sm"
+                            variant="outline"
+                            className="h-8 w-8 p-0"
+                          >
+                            <X className="w-3 h-3" />
+                          </Button>
+                        </div>
+                      ) : (
+                        <span
+                          className={
+                            prelevement.amount < 0 ? "text-green-600" : ""
+                          }
+                        >
+                          {prelevement.amount.toFixed(2)} €
+                        </span>
+                      )}
+                    </div>
+                    <div>
+                      <Checkbox
+                        checked={prelevement.completed}
+                        onCheckedChange={() =>
+                          togglePrelevement(prelevement.id)
                         }
+                      />
+                    </div>
+                    <div className="flex space-x-2">
+                      {editingId !== prelevement.id && (
+                        <Button
+                          onClick={() =>
+                            startEdit(prelevement.id, prelevement.amount)
+                          }
+                          size="sm"
+                          variant="ghost"
+                          className="h-8 w-8 p-0"
+                        >
+                          <Edit2 className="w-4 h-4" />
+                        </Button>
+                      )}
+                      <Button
+                        onClick={() => deletePrelevement(prelevement.id)}
                         size="sm"
                         variant="ghost"
-                        className="h-8 w-8 p-0"
+                        className="h-8 w-8 p-0 text-destructive hover:text-destructive"
                       >
-                        <Edit2 className="w-4 h-4" />
+                        <Trash2 className="w-4 h-4" />
                       </Button>
-                    )}
-                    <Button
-                      onClick={() => deletePrelevement(prelevement.id)}
-                      size="sm"
-                      variant="ghost"
-                      className="h-8 w-8 p-0 text-destructive hover:text-destructive"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
+                    </div>
                   </div>
                 </div>
               ))}
           </div>
 
-          <div className="mt-6 p-4 border rounded-lg bg-muted/50">
-            <div className="flex justify-between items-center">
+          <div className="p-4 border rounded-lg bg-muted/50">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
               <span className="text-lg font-semibold">Total à venir</span>
               <span
                 className={`text-xl font-bold ${
