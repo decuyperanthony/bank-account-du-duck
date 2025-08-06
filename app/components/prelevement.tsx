@@ -6,43 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Trash2, Edit2, Check, X, Plus } from "lucide-react";
-
-interface Prelevement {
-  id: number;
-  title: string;
-  day: number;
-  amount: number;
-  completed: boolean;
-}
-
-const defaultPrelevements: Prelevement[] = [
-  { id: 1, title: "SFR", day: 2, amount: 33.99, completed: false }, //
-  { id: 2, title: "SFR", day: 4, amount: 1.99, completed: false }, //
-  { id: 3, title: "Canal +", day: 4, amount: 45.99, completed: false }, //
-  { id: 4, title: "SFR", day: 5, amount: 37.85, completed: false }, //
-  { id: 5, title: "CAF", day: 5, amount: -75.53, completed: false }, //
-  { id: 14, title: "Spotify", day: 5, amount: 17.2, completed: false }, //
-  { id: 6, title: "Amazon Prime", day: 5, amount: 6.99, completed: false }, //
-  { id: 7, title: "Scooter", day: 5, amount: 166.59, completed: false }, //
-  { id: 8, title: "SFR", day: 5, amount: 8.99, completed: false }, //
-  { id: 9, title: "Climatiseur", day: 6, amount: 69.9, completed: false }, //
-  { id: 10, title: "L'equipe", day: 6, amount: 3.99, completed: false }, //
-  { id: 11, title: "Apple 2TO", day: 10, amount: 9.99, completed: false }, //
-  { id: 12, title: "Loyer", day: 10, amount: 1100.0, completed: false }, //
-  { id: 13, title: "MAIF", day: 10, amount: 94.03, completed: false }, //
-  {
-    id: 14,
-    title: "Science et vie junior",
-    day: 12,
-    amount: 5.44,
-    completed: false,
-  }, //
-  { id: 15, title: "EDF", day: 16, amount: 135.0, completed: false }, //
-  { id: 16, title: "Impot", day: 16, amount: 38.0, completed: false }, //
-];
+import { defaultPrelevements, PrelevementType } from "@/data";
 
 export default function Prelevement() {
-  const [prelevements, setPrelevements] = useState<Prelevement[]>([]);
+  const [prelevements, setPrelevements] = useState<PrelevementType[]>([]);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editAmount, setEditAmount] = useState("");
   const [newPrelevement, setNewPrelevement] = useState({
@@ -149,6 +116,11 @@ export default function Prelevement() {
 
   const allCompleted = prelevements.every((p) => p.completed);
 
+  // Fonction pour obtenir la couleur du montant
+  const getAmountColor = (amount: number) => {
+    return amount >= 0 ? "text-green-600" : "text-red-600";
+  };
+
   if (!isLoaded) {
     return (
       <div className="max-w-4xl mx-auto p-4 sm:p-6 bg-background min-h-screen flex items-center justify-center">
@@ -233,7 +205,7 @@ export default function Prelevement() {
                 <Input
                   type="number"
                   step="0.01"
-                  placeholder="Montant"
+                  placeholder="Montant (- pour prélèvement, + pour revenu)"
                   value={newPrelevement.amount}
                   onChange={(e) =>
                     setNewPrelevement({
@@ -297,16 +269,14 @@ export default function Prelevement() {
                         >
                           {prelevement.title}
                         </h3>
-                        <div className="flex items-center gap-4 mt-1 text-sm text-muted-foreground">
-                          <span>
+                        <div className="flex items-center gap-4 mt-1 text-sm">
+                          <span className="text-muted-foreground">
                             Jour {prelevement.day.toString().padStart(2, "0")}
                           </span>
                           <span
-                            className={`font-mono font-medium ${
-                              prelevement.amount < 0 ? "text-green-600" : ""
-                            } ${
-                              prelevement.completed ? "" : "text-foreground"
-                            }`}
+                            className={`font-mono font-medium ${getAmountColor(
+                              prelevement.amount
+                            )} ${prelevement.completed ? "opacity-60" : ""}`}
                           >
                             {prelevement.amount.toFixed(2)} €
                           </span>
@@ -403,11 +373,7 @@ export default function Prelevement() {
                           </Button>
                         </div>
                       ) : (
-                        <span
-                          className={
-                            prelevement.amount < 0 ? "text-green-600" : ""
-                          }
-                        >
+                        <span className={getAmountColor(prelevement.amount)}>
                           {prelevement.amount.toFixed(2)} €
                         </span>
                       )}
@@ -450,12 +416,8 @@ export default function Prelevement() {
           <div className="p-4 border rounded-lg bg-muted/50">
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
               <span className="text-lg font-semibold">Total à venir</span>
-              <span
-                className={`text-xl font-bold ${
-                  totalAVenir < 0 ? "text-green-600" : ""
-                }`}
-              >
-                {totalAVenir.toFixed(2)} €
+              <span className="text-xl font-bold text-foreground">
+                {Math.abs(totalAVenir).toFixed(2)} €
               </span>
             </div>
             <div className="text-xs text-muted-foreground mt-2">
