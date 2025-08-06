@@ -22,6 +22,7 @@ const defaultPrelevements: Prelevement[] = [
   { id: 4, title: "SFR", day: 5, amount: 37.85, completed: false },
   { id: 5, title: "CAF", day: 5, amount: -75.53, completed: false },
   { id: 6, title: "Spotify", day: 5, amount: 17.2, completed: false },
+  { id: 6, title: "Amazon Prime", day: 5, amount: 6.99, completed: false },
   { id: 7, title: "Scooter", day: 5, amount: 166.59, completed: false },
   { id: 8, title: "SFR", day: 5, amount: 9.99, completed: false },
   { id: 9, title: "Climatiseur", day: 6, amount: 69.9, completed: false },
