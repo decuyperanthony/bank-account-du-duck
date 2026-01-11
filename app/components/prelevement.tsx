@@ -1,12 +1,19 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Trash2, Edit2, Check, X, Plus } from "lucide-react";
-import { defaultPrelevements, PrelevementType } from "@/data";
+
+type PrelevementType = {
+  id: number;
+  title: string;
+  day: number;
+  amount: number;
+  completed: boolean;
+};
 
 export default function Prelevement() {
   const [prelevements, setPrelevements] = useState<PrelevementType[]>([]);
@@ -19,45 +26,78 @@ export default function Prelevement() {
   });
   const [showAddForm, setShowAddForm] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    const savedPrelevements = localStorage.getItem("prelevements");
-    if (savedPrelevements) {
-      try {
-        setPrelevements(JSON.parse(savedPrelevements));
-      } catch (error) {
-        console.error("Erreur lors du chargement des données:", error);
-        setPrelevements(defaultPrelevements);
+  const fetchPrelevements = useCallback(async () => {
+    try {
+      const response = await fetch("/api/prelevements");
+      if (response.ok) {
+        const data = await response.json();
+        setPrelevements(data);
       }
-    } else {
-      setPrelevements(defaultPrelevements);
+    } catch (error) {
+      console.error("Erreur lors du chargement des données:", error);
+    } finally {
+      setIsLoaded(true);
     }
-    setIsLoaded(true);
   }, []);
 
   useEffect(() => {
-    if (isLoaded) {
-      localStorage.setItem("prelevements", JSON.stringify(prelevements));
-    }
-  }, [prelevements, isLoaded]);
+    fetchPrelevements();
+  }, [fetchPrelevements]);
 
-  const toggleAll = () => {
+  const toggleAll = async () => {
     const allCompleted = prelevements.every((p) => p.completed);
-    setPrelevements(
-      prelevements.map((p) => ({ ...p, completed: !allCompleted }))
-    );
+    setIsLoading(true);
+    try {
+      const response = await fetch("/api/prelevements/toggle-all", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ completed: !allCompleted }),
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setPrelevements(data);
+      }
+    } catch (error) {
+      console.error("Erreur lors du toggle all:", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const togglePrelevement = (id: number) => {
-    setPrelevements(
-      prelevements.map((p) =>
-        p.id === id ? { ...p, completed: !p.completed } : p
-      )
-    );
+  const togglePrelevement = async (id: number) => {
+    const prelevement = prelevements.find((p) => p.id === id);
+    if (!prelevement) return;
+
+    try {
+      const response = await fetch(`/api/prelevements/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ completed: !prelevement.completed }),
+      });
+      if (response.ok) {
+        const updatedPrelevement = await response.json();
+        setPrelevements(
+          prelevements.map((p) => (p.id === id ? updatedPrelevement : p))
+        );
+      }
+    } catch (error) {
+      console.error("Erreur lors du toggle:", error);
+    }
   };
 
-  const deletePrelevement = (id: number) => {
-    setPrelevements(prelevements.filter((p) => p.id !== id));
+  const deletePrelevement = async (id: number) => {
+    try {
+      const response = await fetch(`/api/prelevements/${id}`, {
+        method: "DELETE",
+      });
+      if (response.ok) {
+        setPrelevements(prelevements.filter((p) => p.id !== id));
+      }
+    } catch (error) {
+      console.error("Erreur lors de la suppression:", error);
+    }
   };
 
   const startEdit = (id: number, amount: number) => {
@@ -65,12 +105,27 @@ export default function Prelevement() {
     setEditAmount(amount.toString());
   };
 
-  const saveEdit = (id: number) => {
+  const saveEdit = async (id: number) => {
     const newAmount = Number.parseFloat(editAmount);
-    if (!isNaN(newAmount)) {
-      setPrelevements(
-        prelevements.map((p) => (p.id === id ? { ...p, amount: newAmount } : p))
-      );
+    if (isNaN(newAmount)) {
+      cancelEdit();
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/prelevements/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ amount: newAmount }),
+      });
+      if (response.ok) {
+        const updatedPrelevement = await response.json();
+        setPrelevements(
+          prelevements.map((p) => (p.id === id ? updatedPrelevement : p))
+        );
+      }
+    } catch (error) {
+      console.error("Erreur lors de la modification:", error);
     }
     setEditingId(null);
     setEditAmount("");
@@ -81,32 +136,50 @@ export default function Prelevement() {
     setEditAmount("");
   };
 
-  const addPrelevement = () => {
-    if (newPrelevement.title && newPrelevement.day && newPrelevement.amount) {
-      const newId =
-        prelevements.length > 0
-          ? Math.max(...prelevements.map((p) => p.id)) + 1
-          : 1;
-      setPrelevements([
-        ...prelevements,
-        {
-          id: newId,
+  const addPrelevement = async () => {
+    if (!newPrelevement.title || !newPrelevement.day || !newPrelevement.amount) {
+      return;
+    }
+
+    try {
+      const response = await fetch("/api/prelevements", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
           title: newPrelevement.title,
           day: Number.parseInt(newPrelevement.day),
           amount: Number.parseFloat(newPrelevement.amount),
-          completed: false,
-        },
-      ]);
-      setNewPrelevement({ title: "", day: "", amount: "" });
-      setShowAddForm(false);
+        }),
+      });
+      if (response.ok) {
+        const newItem = await response.json();
+        setPrelevements([...prelevements, newItem]);
+        setNewPrelevement({ title: "", day: "", amount: "" });
+        setShowAddForm(false);
+      }
+    } catch (error) {
+      console.error("Erreur lors de l'ajout:", error);
     }
   };
 
-  const resetData = () => {
-    if (
-      confirm("Êtes-vous sûr de vouloir réinitialiser toutes les données ?")
-    ) {
-      setPrelevements(defaultPrelevements);
+  const resetData = async () => {
+    if (!confirm("Êtes-vous sûr de vouloir réinitialiser toutes les données ?")) {
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const response = await fetch("/api/prelevements/reset", {
+        method: "POST",
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setPrelevements(data);
+      }
+    } catch (error) {
+      console.error("Erreur lors du reset:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -114,9 +187,8 @@ export default function Prelevement() {
     .filter((p) => !p.completed)
     .reduce((sum, p) => sum + p.amount, 0);
 
-  const allCompleted = prelevements.every((p) => p.completed);
+  const allCompleted = prelevements.length > 0 && prelevements.every((p) => p.completed);
 
-  // Fonction pour obtenir la couleur du montant
   const getAmountColor = (amount: number) => {
     return amount >= 0 ? "text-green-600" : "text-red-600";
   };
@@ -145,6 +217,7 @@ export default function Prelevement() {
               variant="outline"
               size="sm"
               className="text-destructive bg-transparent self-start sm:self-auto"
+              disabled={isLoading}
             >
               Réinitialiser
             </Button>
@@ -156,6 +229,7 @@ export default function Prelevement() {
                 id="toggle-all"
                 checked={allCompleted}
                 onCheckedChange={toggleAll}
+                disabled={isLoading || prelevements.length === 0}
               />
               <label
                 htmlFor="toggle-all"
@@ -205,7 +279,7 @@ export default function Prelevement() {
                 <Input
                   type="number"
                   step="0.01"
-                  placeholder="Montant (- pour prélèvement, + pour revenu)"
+                  placeholder="Montant (- pour revenu)"
                   value={newPrelevement.amount}
                   onChange={(e) =>
                     setNewPrelevement({
@@ -421,7 +495,7 @@ export default function Prelevement() {
               </span>
             </div>
             <div className="text-xs text-muted-foreground mt-2">
-              Données sauvegardées automatiquement
+              Données synchronisées avec la base de données
             </div>
           </div>
         </CardContent>
