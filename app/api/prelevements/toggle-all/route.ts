@@ -1,10 +1,11 @@
-import { db } from "@/db";
+import { getDb } from "@/db";
 import { prelevements } from "@/db/schema";
 import { NextResponse } from "next/server";
 
 // POST toggle all prelevements completed status
 export async function POST(request: Request) {
   try {
+    const db = getDb();
     const body = await request.json();
     const { completed } = body;
 

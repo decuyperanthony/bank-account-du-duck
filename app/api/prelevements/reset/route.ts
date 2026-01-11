@@ -1,4 +1,4 @@
-import { db } from "@/db";
+import { getDb } from "@/db";
 import { prelevements } from "@/db/schema";
 import { NextResponse } from "next/server";
 
@@ -24,6 +24,7 @@ const defaultPrelevements = [
 // POST reset prelevements to defaults
 export async function POST() {
   try {
+    const db = getDb();
     // Delete all existing prelevements
     await db.delete(prelevements);
 
