@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#2dd4bf"/>
+      <stop offset="100%" style="stop-color:#14b8a6"/>
+    </linearGradient>
+  </defs>
+  <!-- Background -->
+  <rect width="512" height="512" rx="96" fill="url(#bgGrad)"/>
+  <!-- Duck silhouette -->
+  <g transform="translate(56, 80)">
+    <!-- Body -->
+    <ellipse cx="200" cy="280" rx="160" ry="100" fill="white"/>
+    <!-- Head -->
+    <circle cx="320" cy="180" r="80" fill="white"/>
+    <!-- Beak -->
+    <path d="M380 180 L440 165 L440 195 L380 180 Z" fill="#fbbf24"/>
+    <!-- Eye -->
+    <circle cx="350" cy="165" r="12" fill="#0f172a"/>
+    <!-- Wing detail -->
+    <path d="M80 260 Q140 200 200 260 Q140 240 80 260 Z" fill="#e2e8f0"/>
+    <!-- Coin slot on body -->
+    <rect x="160" y="250" width="80" height="8" rx="4" fill="#0f172a" opacity="0.3"/>
+  </g>
+</svg>
