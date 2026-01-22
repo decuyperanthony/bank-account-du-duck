@@ -120,3 +120,59 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Safe area utilities for PWA */
+@layer utilities {
+  .pt-safe {
+    padding-top: env(safe-area-inset-top);
+  }
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .pl-safe {
+    padding-left: env(safe-area-inset-left);
+  }
+  .pr-safe {
+    padding-right: env(safe-area-inset-right);
+  }
+  .pt-header {
+    padding-top: calc(env(safe-area-inset-top) + 56px);
+  }
+  .pb-nav-safe {
+    padding-bottom: calc(env(safe-area-inset-bottom) + 80px);
+  }
+}
+
+/* Splash screen styles */
+.splash-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #2dd4bf 0%, #14b8a6 100%);
+  transition: opacity 0.3s ease-out;
+}
+
+.splash-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.splash-icon {
+  animation: splash-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes splash-pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.9;
+  }
+}
