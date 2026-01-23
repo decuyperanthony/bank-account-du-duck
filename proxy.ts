@@ -1,66 +1,69 @@
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
+import { createServerClient } from "@supabase/ssr";
+import { NextResponse, type NextRequest } from "next/server";
 
-export function proxy(request: NextRequest) {
-  const user = process.env.BASIC_AUTH_USER;
-  const pass = process.env.BASIC_AUTH_PASS;
-
-  // Si les variables ne sont pas définies, on laisse passer
-  if (!user || !pass) {
-    return NextResponse.next();
-  }
-
-  // Exclure les fichiers statiques et les routes API
-  const { pathname } = request.nextUrl;
-
-  if (
-    pathname.startsWith("/_next") ||
-    pathname.startsWith("/api") ||
-    pathname === "/favicon.ico" ||
-    pathname.includes(".")
-  ) {
-    return NextResponse.next();
-  }
-
-  const authHeader = request.headers.get("authorization");
-
-  if (authHeader) {
-    try {
-      const [scheme, encoded] = authHeader.split(" ");
-
-      if (scheme === "Basic" && encoded) {
-        const decoded = atob(encoded);
-        const [username, password] = decoded.split(":");
-
-        if (username === user && password === pass) {
-          return NextResponse.next();
-        }
-      }
-    } catch (error) {
-      console.error("Auth decode error:", error);
-      // Continue to return 401 below
-    }
-  }
-
-  // Retourner une réponse 401 avec les en-têtes appropriés
-  return new NextResponse("Authentication required", {
-    status: 401,
-    headers: {
-      "WWW-Authenticate": 'Basic realm="Secure Area"',
-      "Content-Type": "text/plain",
-    },
+const updateSession = async (request: NextRequest) => {
+  let supabaseResponse = NextResponse.next({
+    request,
   });
-}
+
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL ?? "",
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "",
+    {
+      cookies: {
+        getAll: () => request.cookies.getAll(),
+        setAll: (cookiesToSet) => {
+          for (const { name, value } of cookiesToSet) {
+            request.cookies.set(name, value);
+          }
+          supabaseResponse = NextResponse.next({
+            request,
+          });
+          for (const { name, value, options } of cookiesToSet) {
+            supabaseResponse.cookies.set(name, value, options);
+          }
+        },
+      },
+    }
+  );
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const isLoginPage = request.nextUrl.pathname === "/login";
+
+  // Redirect unauthenticated users to login page
+  if (!user && !isLoginPage) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/login";
+    return NextResponse.redirect(url);
+  }
+
+  // Redirect authenticated users away from login page
+  if (user && isLoginPage) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/";
+    return NextResponse.redirect(url);
+  }
+
+  return supabaseResponse;
+};
+
+export const proxy = async (request: NextRequest) => {
+  return updateSession(request);
+};
 
 export const config = {
   matcher: [
     /*
-     * Match all request paths except for the ones starting with:
-     * - api (API routes)
+     * Match all request paths except:
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
+     * - PWA assets: sw.js, workbox*.js, manifest.json, icons, splash
+     * - API routes
      */
-    "/((?!api|_next/static|_next/image|favicon.ico).*)",
+    "/((?!_next/static|_next/image|favicon.ico|sw\\.js|workbox-.*\\.js|manifest\\.json|icons/.*|splash/.*|apple-touch-icon\\.png|splash-hide\\.js|api/).*)",
   ],
 };
