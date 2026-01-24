@@ -77,9 +77,9 @@ export const ConnectionStatus = ({ className }: ConnectionStatusProps) => {
         "px-4 py-2 rounded-full shadow-lg",
         "flex items-center gap-2 text-sm font-medium",
         "transition-all duration-300",
-        !isOnline && "bg-amber-500 text-white",
-        isSyncing && "bg-blue-500 text-white",
-        isOnline && !isSyncing && "bg-green-500 text-white",
+        !isOnline && "bg-warning text-white",
+        isSyncing && "bg-info text-white",
+        isOnline && !isSyncing && "bg-success text-white",
         className
       )}
     >

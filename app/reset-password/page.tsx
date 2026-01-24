@@ -100,7 +100,7 @@ const ResetPasswordPage = () => {
 
   if (isValidSession === null) {
     return (
-      <main className="flex min-h-screen items-center justify-center p-4 bg-gradient-to-br from-teal-50 to-teal-100 dark:from-gray-900 dark:to-gray-800">
+      <main className="flex min-h-screen items-center justify-center p-4 bg-background">
         <Card className="w-full max-w-md">
           <CardContent className="flex items-center justify-center py-8">
             <div className="text-muted-foreground">Chargement...</div>
@@ -111,7 +111,7 @@ const ResetPasswordPage = () => {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center p-4 bg-gradient-to-br from-teal-50 to-teal-100 dark:from-gray-900 dark:to-gray-800">
+    <main className="flex min-h-screen items-center justify-center p-4 bg-background">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl">
@@ -121,7 +121,7 @@ const ResetPasswordPage = () => {
         <CardContent>
           {success ? (
             <div className="flex flex-col items-center gap-4">
-              <CheckCircle className="size-16 text-green-500" />
+              <CheckCircle className="size-16 text-success" />
               <p className="text-center text-muted-foreground">
                 Votre mot de passe a été modifié avec succès. Redirection...
               </p>

@@ -19,7 +19,7 @@ export const BottomNav = ({ onAddClick, activeTab = "home" }: BottomNavProps) =>
           className={cn(
             "flex flex-col items-center gap-1 px-6 py-2 rounded-lg transition-colors",
             activeTab === "home"
-              ? "text-teal-500"
+              ? "text-accent-primary"
               : "text-muted-foreground hover:text-foreground"
           )}
         >
@@ -34,8 +34,8 @@ export const BottomNav = ({ onAddClick, activeTab = "home" }: BottomNavProps) =>
           className={cn(
             "flex items-center justify-center",
             "size-14 -mt-6 rounded-full",
-            "bg-teal-500 text-white shadow-lg",
-            "hover:bg-teal-600 active:scale-95",
+            "bg-accent-primary text-white shadow-lg",
+            "hover:bg-accent-hover active:scale-95",
             "transition-all"
           )}
         >
@@ -48,7 +48,7 @@ export const BottomNav = ({ onAddClick, activeTab = "home" }: BottomNavProps) =>
           className={cn(
             "flex flex-col items-center gap-1 px-6 py-2 rounded-lg transition-colors",
             activeTab === "settings"
-              ? "text-teal-500"
+              ? "text-accent-primary"
               : "text-muted-foreground hover:text-foreground"
           )}
         >
