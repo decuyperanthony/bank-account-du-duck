@@ -5,6 +5,7 @@ import { LogOut } from "lucide-react";
 import { GlassBar } from "@/components/ui/glass-bar";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
+import { ROUTES } from "@/lib/routes";
 
 export const Header = () => {
   const router = useRouter();
@@ -12,7 +13,7 @@ export const Header = () => {
   const handleLogout = async () => {
     const supabase = createClient();
     await supabase.auth.signOut();
-    router.push("/login");
+    router.push(ROUTES.LOGIN);
     router.refresh();
   };
 
