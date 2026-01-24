@@ -2,10 +2,12 @@
 
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { ROUTES } from "@/lib/routes";
 
 const LoginPage = () => {
   const router = useRouter();
@@ -31,7 +33,7 @@ const LoginPage = () => {
       return;
     }
 
-    router.push("/");
+    router.push(ROUTES.HOME);
     router.refresh();
   };
 
@@ -100,9 +102,17 @@ const LoginPage = () => {
               />
             </div>
             <div className="flex flex-col gap-2">
-              <label htmlFor="password" className="text-sm font-medium">
-                Password
-              </label>
+              <div className="flex items-center justify-between">
+                <label htmlFor="password" className="text-sm font-medium">
+                  Password
+                </label>
+                <Link
+                  href={ROUTES.FORGOT_PASSWORD}
+                  className="text-sm text-primary hover:underline"
+                >
+                  Mot de passe oublié ?
+                </Link>
+              </div>
               <Input
                 id="password"
                 type="password"

@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { ROUTES } from "@/lib/routes";
 
 const updateSession = async (request: NextRequest) => {
   let supabaseResponse = NextResponse.next({
@@ -31,19 +32,23 @@ const updateSession = async (request: NextRequest) => {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const isLoginPage = request.nextUrl.pathname === "/login";
+  const pathname = request.nextUrl.pathname;
+  const isAuthPage =
+    pathname === ROUTES.LOGIN ||
+    pathname === ROUTES.FORGOT_PASSWORD ||
+    pathname === ROUTES.RESET_PASSWORD;
 
   // Redirect unauthenticated users to login page
-  if (!user && !isLoginPage) {
+  if (!user && !isAuthPage) {
     const url = request.nextUrl.clone();
-    url.pathname = "/login";
+    url.pathname = ROUTES.LOGIN;
     return NextResponse.redirect(url);
   }
 
-  // Redirect authenticated users away from login page
-  if (user && isLoginPage) {
+  // Redirect authenticated users away from login page (but allow reset-password)
+  if (user && pathname === ROUTES.LOGIN) {
     const url = request.nextUrl.clone();
-    url.pathname = "/";
+    url.pathname = ROUTES.HOME;
     return NextResponse.redirect(url);
   }
 
