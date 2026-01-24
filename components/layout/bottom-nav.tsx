@@ -1,8 +1,10 @@
 "use client";
 
+import Link from "next/link";
 import { Home, Plus, Settings } from "lucide-react";
 import { GlassBar } from "@/components/ui/glass-bar";
 import { cn } from "@/lib/utils";
+import { ROUTES } from "@/lib/routes";
 
 type BottomNavProps = {
   onAddClick?: () => void;
@@ -14,8 +16,8 @@ export const BottomNav = ({ onAddClick, activeTab = "home" }: BottomNavProps) =>
     <GlassBar position="bottom" as="nav">
       <div className="flex items-center justify-around px-4 py-2">
         {/* Home */}
-        <button
-          type="button"
+        <Link
+          href={ROUTES.HOME}
           className={cn(
             "flex flex-col items-center gap-1 px-6 py-2 rounded-lg transition-colors",
             activeTab === "home"
@@ -25,7 +27,7 @@ export const BottomNav = ({ onAddClick, activeTab = "home" }: BottomNavProps) =>
         >
           <Home className="size-6" />
           <span className="text-xs font-medium">Accueil</span>
-        </button>
+        </Link>
 
         {/* Add button - elevated */}
         <button
@@ -43,8 +45,8 @@ export const BottomNav = ({ onAddClick, activeTab = "home" }: BottomNavProps) =>
         </button>
 
         {/* Settings */}
-        <button
-          type="button"
+        <Link
+          href={ROUTES.SETTINGS}
           className={cn(
             "flex flex-col items-center gap-1 px-6 py-2 rounded-lg transition-colors",
             activeTab === "settings"
@@ -53,8 +55,8 @@ export const BottomNav = ({ onAddClick, activeTab = "home" }: BottomNavProps) =>
           )}
         >
           <Settings className="size-6" />
-          <span className="text-xs font-medium">Params</span>
-        </button>
+          <span className="text-xs font-medium">Réglages</span>
+        </Link>
       </div>
     </GlassBar>
   );
