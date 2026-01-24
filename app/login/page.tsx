@@ -38,7 +38,7 @@ const LoginPage = () => {
   };
 
   return (
-    <main className="flex min-h-screen items-center justify-center p-4 bg-gradient-to-br from-teal-50 to-teal-100 dark:from-gray-900 dark:to-gray-800">
+    <main className="flex min-h-screen items-center justify-center p-4 bg-background">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
@@ -57,8 +57,8 @@ const LoginPage = () => {
                   x2="100%"
                   y2="100%"
                 >
-                  <stop offset="0%" stopColor="#2dd4bf" />
-                  <stop offset="100%" stopColor="#14b8a6" />
+                  <stop offset="0%" stopColor="#D97757" />
+                  <stop offset="100%" stopColor="#E8956F" />
                 </linearGradient>
               </defs>
               <rect width="512" height="512" rx="96" fill="url(#loginGrad)" />

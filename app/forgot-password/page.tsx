@@ -39,7 +39,7 @@ const ForgotPasswordPage = () => {
   };
 
   return (
-    <main className="flex min-h-screen items-center justify-center p-4 bg-gradient-to-br from-teal-50 to-teal-100 dark:from-gray-900 dark:to-gray-800">
+    <main className="flex min-h-screen items-center justify-center p-4 bg-background">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl">Mot de passe oublié</CardTitle>
@@ -47,7 +47,7 @@ const ForgotPasswordPage = () => {
         <CardContent>
           {success ? (
             <div className="flex flex-col gap-4">
-              <div className="rounded-md bg-green-100 p-4 text-sm text-green-800 dark:bg-green-900/30 dark:text-green-400">
+              <div className="rounded-md bg-success/10 p-4 text-sm text-success">
                 Un email de réinitialisation a été envoyé à{" "}
                 <strong>{email}</strong>. Vérifiez votre boîte de réception.
               </div>
