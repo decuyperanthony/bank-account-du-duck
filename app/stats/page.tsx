@@ -51,9 +51,14 @@ export default function StatsPage() {
   }, []);
 
   const stats = useMemo(() => {
-    // Séparer dépenses et revenus
-    const depenses = prelevements.filter(p => p.amount > 0);
-    const revenus = prelevements.filter(p => p.amount < 0);
+    // Séparer dépenses et revenus (avec fallback si category undefined)
+    const withCategory = prelevements.map(p => ({
+      ...p,
+      category: p.category || "autre"
+    }));
+
+    const depenses = withCategory.filter(p => p.amount > 0);
+    const revenus = withCategory.filter(p => p.amount < 0);
 
     const totalDepenses = depenses.reduce((sum, p) => sum + p.amount, 0);
     const totalRevenus = Math.abs(revenus.reduce((sum, p) => sum + p.amount, 0));

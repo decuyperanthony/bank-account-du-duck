@@ -1,14 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { Home, Plus, Settings, BarChart3 } from "lucide-react";
+import { Home, Plus, Settings, BarChart3, CalendarDays } from "lucide-react";
 import { GlassBar } from "@/components/ui/glass-bar";
 import { cn } from "@/lib/utils";
 import { ROUTES } from "@/lib/routes";
 
 type BottomNavProps = {
   onAddClick?: () => void;
-  activeTab?: "home" | "stats" | "settings";
+  activeTab?: "home" | "stats" | "calendar" | "settings";
 };
 
 export const BottomNav = ({ onAddClick, activeTab = "home" }: BottomNavProps) => {
@@ -57,6 +57,20 @@ export const BottomNav = ({ onAddClick, activeTab = "home" }: BottomNavProps) =>
         >
           <Plus className="size-7" />
         </button>
+
+        {/* Calendar */}
+        <Link
+          href={ROUTES.CALENDAR}
+          className={cn(
+            "flex flex-col items-center gap-1 px-4 py-2 rounded-lg transition-colors",
+            activeTab === "calendar"
+              ? "text-accent-primary"
+              : "text-muted-foreground hover:text-foreground"
+          )}
+        >
+          <CalendarDays className="size-6" />
+          <span className="text-xs font-medium">Calendrier</span>
+        </Link>
 
         {/* Settings */}
         <Link
