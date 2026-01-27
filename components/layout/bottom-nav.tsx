@@ -1,14 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { Home, Plus, Settings } from "lucide-react";
+import { Home, Plus, Settings, BarChart3 } from "lucide-react";
 import { GlassBar } from "@/components/ui/glass-bar";
 import { cn } from "@/lib/utils";
 import { ROUTES } from "@/lib/routes";
 
 type BottomNavProps = {
   onAddClick?: () => void;
-  activeTab?: "home" | "settings";
+  activeTab?: "home" | "stats" | "settings";
 };
 
 export const BottomNav = ({ onAddClick, activeTab = "home" }: BottomNavProps) => {
@@ -19,7 +19,7 @@ export const BottomNav = ({ onAddClick, activeTab = "home" }: BottomNavProps) =>
         <Link
           href={ROUTES.HOME}
           className={cn(
-            "flex flex-col items-center gap-1 px-6 py-2 rounded-lg transition-colors",
+            "flex flex-col items-center gap-1 px-4 py-2 rounded-lg transition-colors",
             activeTab === "home"
               ? "text-accent-primary"
               : "text-muted-foreground hover:text-foreground"
@@ -27,6 +27,20 @@ export const BottomNav = ({ onAddClick, activeTab = "home" }: BottomNavProps) =>
         >
           <Home className="size-6" />
           <span className="text-xs font-medium">Accueil</span>
+        </Link>
+
+        {/* Stats */}
+        <Link
+          href={ROUTES.STATS}
+          className={cn(
+            "flex flex-col items-center gap-1 px-4 py-2 rounded-lg transition-colors",
+            activeTab === "stats"
+              ? "text-accent-primary"
+              : "text-muted-foreground hover:text-foreground"
+          )}
+        >
+          <BarChart3 className="size-6" />
+          <span className="text-xs font-medium">Stats</span>
         </Link>
 
         {/* Add button - elevated */}
@@ -48,7 +62,7 @@ export const BottomNav = ({ onAddClick, activeTab = "home" }: BottomNavProps) =>
         <Link
           href={ROUTES.SETTINGS}
           className={cn(
-            "flex flex-col items-center gap-1 px-6 py-2 rounded-lg transition-colors",
+            "flex flex-col items-center gap-1 px-4 py-2 rounded-lg transition-colors",
             activeTab === "settings"
               ? "text-accent-primary"
               : "text-muted-foreground hover:text-foreground"

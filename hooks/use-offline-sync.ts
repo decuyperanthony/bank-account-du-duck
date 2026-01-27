@@ -15,6 +15,7 @@ type PrelevementType = {
   title: string;
   day: number;
   amount: number;
+  category: string;
   completed: boolean;
 };
 
