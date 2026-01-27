@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Trash2, Edit2, Check, X, Plus } from "lucide-react";
 import { PageLayout } from "@/components/layout/page-layout";
 import { useOfflineSync } from "@/hooks/use-offline-sync";
-import { CATEGORIES, CATEGORY_LABELS, type Category } from "@/db/schema";
+import { CATEGORIES, CATEGORY_LABELS, type Category } from "@/lib/categories";
 
 type PrelevementType = {
   id: number;

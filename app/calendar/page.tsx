@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo } from "react";
 import { PageLayout } from "@/components/layout/page-layout";
-import { CATEGORY_LABELS, CATEGORY_COLORS, type Category } from "@/db/schema";
+import { CATEGORY_LABELS, CATEGORY_COLORS, type Category } from "@/lib/categories";
 import { cn } from "@/lib/utils";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 

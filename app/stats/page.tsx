@@ -7,7 +7,7 @@ import {
   CATEGORY_COLORS,
   type Category,
   CATEGORIES
-} from "@/db/schema";
+} from "@/lib/categories";
 import { cn } from "@/lib/utils";
 import { TrendingUp, TrendingDown, Wallet, PieChart } from "lucide-react";
 
