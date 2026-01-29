@@ -26,7 +26,7 @@ export async function POST(request: Request) {
   try {
     const db = getDb();
     const body = await request.json();
-    const { title, day, amount } = body;
+    const { title, day, amount, category } = body;
 
     if (!title || day === undefined || amount === undefined) {
       return NextResponse.json(
@@ -41,6 +41,7 @@ export async function POST(request: Request) {
         title,
         day: Number(day),
         amount: Number(amount),
+        category: category || "autre",
         completed: false,
       })
       .returning();

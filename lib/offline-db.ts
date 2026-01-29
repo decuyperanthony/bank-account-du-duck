@@ -5,6 +5,7 @@ type PrelevementRecord = {
   title: string;
   day: number;
   amount: number;
+  category: string;
   completed: boolean;
 };
 

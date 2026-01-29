@@ -8,12 +8,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Trash2, Edit2, Check, X, Plus } from "lucide-react";
 import { PageLayout } from "@/components/layout/page-layout";
 import { useOfflineSync } from "@/hooks/use-offline-sync";
+import { CATEGORIES, CATEGORY_LABELS, type Category } from "@/lib/categories";
 
 type PrelevementType = {
   id: number;
   title: string;
   day: number;
   amount: number;
+  category: string;
   completed: boolean;
 };
 
@@ -25,6 +27,7 @@ export default function Prelevement() {
     title: "",
     day: "",
     amount: "",
+    category: "autre" as Category,
   });
   const [showAddForm, setShowAddForm] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
@@ -219,6 +222,7 @@ export default function Prelevement() {
       title: newPrelevement.title,
       day: Number.parseInt(newPrelevement.day),
       amount: Number.parseFloat(newPrelevement.amount),
+      category: newPrelevement.category,
     };
 
     // Optimistic update with temporary ID
@@ -253,7 +257,7 @@ export default function Prelevement() {
       await queueAction("create", payload);
     }
 
-    setNewPrelevement({ title: "", day: "", amount: "" });
+    setNewPrelevement({ title: "", day: "", amount: "", category: "autre" });
     setShowAddForm(false);
   };
 
@@ -356,7 +360,7 @@ export default function Prelevement() {
           <CardContent className="space-y-4">
             {showAddForm && (
               <div className="p-4 border rounded-lg bg-muted/50">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-4">
                   <Input
                     placeholder="Titre"
                     value={newPrelevement.title}
@@ -392,6 +396,22 @@ export default function Prelevement() {
                       })
                     }
                   />
+                  <select
+                    value={newPrelevement.category}
+                    onChange={(e) =>
+                      setNewPrelevement({
+                        ...newPrelevement,
+                        category: e.target.value as Category,
+                      })
+                    }
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  >
+                    {CATEGORIES.map((cat) => (
+                      <option key={cat} value={cat}>
+                        {CATEGORY_LABELS[cat]}
+                      </option>
+                    ))}
+                  </select>
                   <div className="flex space-x-2 sm:col-span-1 lg:col-span-1">
                     <Button
                       onClick={addPrelevement}

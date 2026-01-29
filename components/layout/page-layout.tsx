@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 type PageLayoutProps = {
   children: ReactNode;
   onAddClick?: () => void;
-  activeTab?: "home" | "settings";
+  activeTab?: "home" | "stats" | "calendar" | "settings";
   showConnectionStatus?: boolean;
   className?: string;
 };
