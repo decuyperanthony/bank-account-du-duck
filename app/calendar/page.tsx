@@ -13,6 +13,8 @@ type Prelevement = {
   amount: number;
   category: string;
   completed: boolean;
+  endDate?: string | null;
+  totalAmount?: number | null;
 };
 
 const DAYS_OF_WEEK = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
@@ -54,10 +56,22 @@ export default function CalendarPage() {
     // Nombre de jours dans le mois
     const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-    // Grouper les prélèvements par jour
+    // Grouper les prélèvements par jour (en filtrant les crédits terminés)
     const prelevementsByDay: Record<number, Prelevement[]> = {};
+    const currentMonthDate = new Date(year, month, 1);
+
     prelevements.forEach(p => {
       const day = p.day;
+
+      // Si le prélèvement a une date de fin, vérifier qu'elle n'est pas dépassée
+      if (p.endDate) {
+        const endDate = new Date(p.endDate);
+        // Ne pas afficher si le mois courant est après le mois de fin
+        if (currentMonthDate > new Date(endDate.getFullYear(), endDate.getMonth(), 1)) {
+          return;
+        }
+      }
+
       if (day >= 1 && day <= daysInMonth) {
         if (!prelevementsByDay[day]) {
           prelevementsByDay[day] = [];
