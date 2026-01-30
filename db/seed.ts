@@ -17,6 +17,7 @@ const seedData = [
   { title: "SFR", day: 5, amount: 38.98, category: "telecom", completed: false },
   { title: "CAF", day: 5, amount: -75.53, category: "revenu", completed: false },
   { title: "Scooter", day: 5, amount: 166.59, category: "transport", completed: false },
+  { title: "Canapé => 04/12/2026", day: 5, amount: 185.09, category: "credit", completed: false },
   { title: "EDF", day: 5, amount: 125.12, category: "logement", completed: false },
   // Jour 6
   { title: "SFR", day: 6, amount: 11.96, category: "telecom", completed: false },
