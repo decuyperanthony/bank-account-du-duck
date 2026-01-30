@@ -13,7 +13,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Trash2, Edit2, Check, X, Plus, AlertTriangle } from "lucide-react";
+import { Trash2, Edit2, Check, X, Plus, AlertTriangle, Calendar } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
 import { PageLayout } from "@/components/layout/page-layout";
 import { useOfflineSync } from "@/hooks/use-offline-sync";
 import { CATEGORIES, CATEGORY_LABELS, type Category } from "@/lib/categories";
@@ -25,6 +26,35 @@ type PrelevementType = {
   amount: number;
   category: string;
   completed: boolean;
+  endDate?: string | null;
+  totalAmount?: number | null;
+};
+
+const calculateCreditProgress = (
+  endDate: string | null | undefined,
+  totalAmount: number | null | undefined,
+  monthlyAmount: number
+): { progress: number; remainingMonths: number; paidAmount: number } | null => {
+  if (!endDate || !totalAmount || monthlyAmount <= 0) return null;
+
+  const end = new Date(endDate);
+  const now = new Date();
+
+  // Calculate total months of the credit
+  const totalMonths = Math.round(totalAmount / monthlyAmount);
+
+  // Calculate remaining months from now to end date
+  const remainingMonths = Math.max(
+    0,
+    (end.getFullYear() - now.getFullYear()) * 12 + (end.getMonth() - now.getMonth())
+  );
+
+  // Calculate paid months
+  const paidMonths = Math.max(0, totalMonths - remainingMonths);
+  const paidAmount = paidMonths * monthlyAmount;
+  const progress = Math.min(100, Math.round((paidMonths / totalMonths) * 100));
+
+  return { progress, remainingMonths, paidAmount };
 };
 
 export default function Prelevement() {
@@ -36,6 +66,8 @@ export default function Prelevement() {
     day: "",
     amount: "",
     category: "autre" as Category,
+    endDate: "",
+    totalAmount: "",
   });
   const [showAddForm, setShowAddForm] = useState(false);
   const [showResetDialog, setShowResetDialog] = useState(false);
@@ -232,6 +264,8 @@ export default function Prelevement() {
       day: Number.parseInt(newPrelevement.day),
       amount: Number.parseFloat(newPrelevement.amount),
       category: newPrelevement.category,
+      endDate: newPrelevement.endDate || null,
+      totalAmount: newPrelevement.totalAmount ? Number.parseFloat(newPrelevement.totalAmount) : null,
     };
 
     // Optimistic update with temporary ID
@@ -266,7 +300,7 @@ export default function Prelevement() {
       await queueAction("create", payload);
     }
 
-    setNewPrelevement({ title: "", day: "", amount: "", category: "autre" });
+    setNewPrelevement({ title: "", day: "", amount: "", category: "autre", endDate: "", totalAmount: "" });
     setShowAddForm(false);
   };
 
@@ -418,6 +452,33 @@ export default function Prelevement() {
                       </option>
                     ))}
                   </select>
+                  {newPrelevement.category === "credit" && (
+                    <>
+                      <Input
+                        type="date"
+                        placeholder="Date de fin"
+                        value={newPrelevement.endDate}
+                        onChange={(e) =>
+                          setNewPrelevement({
+                            ...newPrelevement,
+                            endDate: e.target.value,
+                          })
+                        }
+                      />
+                      <Input
+                        type="number"
+                        step="0.01"
+                        placeholder="Montant total du credit"
+                        value={newPrelevement.totalAmount}
+                        onChange={(e) =>
+                          setNewPrelevement({
+                            ...newPrelevement,
+                            totalAmount: e.target.value,
+                          })
+                        }
+                      />
+                    </>
+                  )}
                 </div>
                 <div className="flex justify-end space-x-2">
                   <Button
@@ -491,6 +552,31 @@ export default function Prelevement() {
                           }
                         />
                       </div>
+
+                      {/* Credit Progress Bar - Mobile */}
+                      {(() => {
+                        const creditInfo = calculateCreditProgress(
+                          prelevement.endDate,
+                          prelevement.totalAmount,
+                          prelevement.amount
+                        );
+                        if (!creditInfo) return null;
+                        return (
+                          <div className="space-y-1">
+                            <div className="flex items-center justify-between text-xs text-muted-foreground">
+                              <span className="flex items-center gap-1">
+                                <Calendar className="w-3 h-3" />
+                                {creditInfo.remainingMonths} mois restants
+                              </span>
+                              <span>{creditInfo.progress}%</span>
+                            </div>
+                            <Progress value={creditInfo.progress} className="h-2" />
+                            <div className="text-xs text-muted-foreground">
+                              {creditInfo.paidAmount.toFixed(0)}€ / {prelevement.totalAmount?.toFixed(0)}€
+                            </div>
+                          </div>
+                        );
+                      })()}
 
                       {editingId === prelevement.id ? (
                         <div className="flex items-center space-x-2">
@@ -611,6 +697,31 @@ export default function Prelevement() {
                         </Button>
                       </div>
                     </div>
+                    {/* Credit Progress Bar - Desktop */}
+                    {(() => {
+                      const creditInfo = calculateCreditProgress(
+                        prelevement.endDate,
+                        prelevement.totalAmount,
+                        prelevement.amount
+                      );
+                      if (!creditInfo) return null;
+                      return (
+                        <div className="hidden lg:block mt-3 pt-3 border-t border-border/50">
+                          <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                              <Calendar className="w-3 h-3" />
+                              {creditInfo.remainingMonths} mois restants
+                            </div>
+                            <div className="flex-1">
+                              <Progress value={creditInfo.progress} className="h-2" />
+                            </div>
+                            <div className="text-xs text-muted-foreground min-w-[100px] text-right">
+                              {creditInfo.paidAmount.toFixed(0)}€ / {prelevement.totalAmount?.toFixed(0)}€ ({creditInfo.progress}%)
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })()}
                   </div>
                 ))}
             </div>
