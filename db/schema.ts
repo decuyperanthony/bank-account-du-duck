@@ -10,6 +10,8 @@ export const prelevements = pgTable("prelevements", {
   amount: real("amount").notNull(),
   category: text("category").default("autre").notNull(),
   completed: boolean("completed").default(false).notNull(),
+  endDate: timestamp("end_date"),
+  totalAmount: real("total_amount"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });

@@ -26,7 +26,7 @@ export async function POST(request: Request) {
   try {
     const db = getDb();
     const body = await request.json();
-    const { title, day, amount, category } = body;
+    const { title, day, amount, category, endDate, totalAmount } = body;
 
     if (!title || day === undefined || amount === undefined) {
       return NextResponse.json(
@@ -43,6 +43,8 @@ export async function POST(request: Request) {
         amount: Number(amount),
         category: category || "autre",
         completed: false,
+        endDate: endDate ? new Date(endDate) : null,
+        totalAmount: totalAmount ? Number(totalAmount) : null,
       })
       .returning();
 
