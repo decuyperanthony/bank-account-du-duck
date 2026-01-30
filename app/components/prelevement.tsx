@@ -5,7 +5,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Trash2, Edit2, Check, X, Plus } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Trash2, Edit2, Check, X, Plus, AlertTriangle } from "lucide-react";
 import { PageLayout } from "@/components/layout/page-layout";
 import { useOfflineSync } from "@/hooks/use-offline-sync";
 import { CATEGORIES, CATEGORY_LABELS, type Category } from "@/lib/categories";
@@ -30,6 +38,7 @@ export default function Prelevement() {
     category: "autre" as Category,
   });
   const [showAddForm, setShowAddForm] = useState(false);
+  const [showResetDialog, setShowResetDialog] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -261,11 +270,8 @@ export default function Prelevement() {
     setShowAddForm(false);
   };
 
-  const resetData = async () => {
-    if (!confirm("Êtes-vous sûr de vouloir réinitialiser toutes les données ?")) {
-      return;
-    }
-
+  const confirmReset = async () => {
+    setShowResetDialog(false);
     setIsLoading(true);
     try {
       if (isOnline) {
@@ -320,7 +326,7 @@ export default function Prelevement() {
                 Gestion des Prélèvements
               </CardTitle>
               <Button
-                onClick={resetData}
+                onClick={() => setShowResetDialog(true)}
                 variant="outline"
                 size="sm"
                 className="text-destructive bg-transparent self-start sm:self-auto"
@@ -360,7 +366,7 @@ export default function Prelevement() {
           <CardContent className="space-y-4">
             {showAddForm && (
               <div className="p-4 border rounded-lg bg-muted/50">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                   <Input
                     placeholder="Titre"
                     value={newPrelevement.title}
@@ -373,7 +379,7 @@ export default function Prelevement() {
                   />
                   <Input
                     type="number"
-                    placeholder="Jour"
+                    placeholder="Jour (1-31)"
                     min="1"
                     max="31"
                     value={newPrelevement.day}
@@ -412,25 +418,23 @@ export default function Prelevement() {
                       </option>
                     ))}
                   </select>
-                  <div className="flex space-x-2 sm:col-span-1 lg:col-span-1">
-                    <Button
-                      onClick={addPrelevement}
-                      size="sm"
-                      className="flex-1 sm:flex-none"
-                    >
-                      <Check className="w-4 h-4 sm:mr-2" />
-                      <span className="hidden sm:inline">Valider</span>
-                    </Button>
-                    <Button
-                      onClick={() => setShowAddForm(false)}
-                      size="sm"
-                      variant="outline"
-                      className="flex-1 sm:flex-none"
-                    >
-                      <X className="w-4 h-4 sm:mr-2" />
-                      <span className="hidden sm:inline">Annuler</span>
-                    </Button>
-                  </div>
+                </div>
+                <div className="flex justify-end space-x-2">
+                  <Button
+                    onClick={() => setShowAddForm(false)}
+                    size="sm"
+                    variant="outline"
+                  >
+                    <X className="w-4 h-4 mr-2" />
+                    Annuler
+                  </Button>
+                  <Button
+                    onClick={addPrelevement}
+                    size="sm"
+                  >
+                    <Check className="w-4 h-4 mr-2" />
+                    Valider
+                  </Button>
                 </div>
               </div>
             )}
@@ -627,6 +631,39 @@ export default function Prelevement() {
           </CardContent>
         </Card>
       </div>
+
+      <Dialog open={showResetDialog} onOpenChange={setShowResetDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-destructive" />
+              Réinitialiser les données
+            </DialogTitle>
+            <DialogDescription className="text-left pt-2">
+              Cette action va supprimer tous vos prélèvements actuels et les
+              remplacer par les données par défaut (seed).
+              <br />
+              <br />
+              <strong>Toutes vos modifications seront perdues.</strong>
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              variant="outline"
+              onClick={() => setShowResetDialog(false)}
+            >
+              Annuler
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={confirmReset}
+              disabled={isLoading}
+            >
+              {isLoading ? "Réinitialisation..." : "Réinitialiser"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </PageLayout>
   );
 }
