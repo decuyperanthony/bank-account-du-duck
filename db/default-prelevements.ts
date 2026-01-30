@@ -54,7 +54,7 @@ export const defaultPrelevements = [
     category: "credit",
     completed: false,
     endDate: new Date("2026-06-21"),
-    totalAmount: 340,
+    totalAmount: 558,
   },
   // Jour 23
   { title: "Ligue 1+", day: 23, amount: 12.99, category: "streaming", completed: false },
