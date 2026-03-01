@@ -12,13 +12,14 @@ export async function PUT(
     const db = getDb();
     const { id } = await params;
     const body = await request.json();
-    const { title, day, amount, completed, endDate, totalAmount } = body;
+    const { title, day, amount, completed, category, endDate, totalAmount } = body;
 
     const updateData: Record<string, unknown> = { updatedAt: new Date() };
     if (title !== undefined) updateData.title = title;
     if (day !== undefined) updateData.day = Number(day);
     if (amount !== undefined) updateData.amount = Number(amount);
     if (completed !== undefined) updateData.completed = completed;
+    if (category !== undefined) updateData.category = category;
     if (endDate !== undefined) updateData.endDate = endDate ? new Date(endDate) : null;
     if (totalAmount !== undefined) updateData.totalAmount = totalAmount ? Number(totalAmount) : null;
 

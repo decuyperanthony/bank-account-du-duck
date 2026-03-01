@@ -17,7 +17,7 @@ import { Trash2, Edit2, Check, X, Plus, AlertTriangle, Calendar } from "lucide-r
 import { Progress } from "@/components/ui/progress";
 import { PageLayout } from "@/components/layout/page-layout";
 import { useOfflineSync } from "@/hooks/use-offline-sync";
-import { CATEGORIES, CATEGORY_LABELS, type Category } from "@/lib/categories";
+import { CATEGORIES, CATEGORY_LABELS, CATEGORY_COLORS, type Category } from "@/lib/categories";
 
 type PrelevementType = {
   id: number;
@@ -59,8 +59,15 @@ const calculateCreditProgress = (
 
 export default function Prelevement() {
   const [prelevements, setPrelevements] = useState<PrelevementType[]>([]);
-  const [editingId, setEditingId] = useState<number | null>(null);
-  const [editAmount, setEditAmount] = useState("");
+  const [editingPrelevement, setEditingPrelevement] = useState<PrelevementType | null>(null);
+  const [editForm, setEditForm] = useState({
+    title: "",
+    day: "",
+    amount: "",
+    category: "autre" as Category,
+    endDate: "",
+    totalAmount: "",
+  });
   const [newPrelevement, setNewPrelevement] = useState({
     title: "",
     day: "",
@@ -205,21 +212,40 @@ export default function Prelevement() {
     }
   };
 
-  const startEdit = (id: number, amount: number) => {
-    setEditingId(id);
-    setEditAmount(amount.toString());
+  const startEdit = (prelevement: PrelevementType) => {
+    setEditingPrelevement(prelevement);
+    setEditForm({
+      title: prelevement.title,
+      day: prelevement.day.toString(),
+      amount: prelevement.amount.toString(),
+      category: (prelevement.category || "autre") as Category,
+      endDate: prelevement.endDate ? new Date(prelevement.endDate).toISOString().split("T")[0] : "",
+      totalAmount: prelevement.totalAmount?.toString() || "",
+    });
   };
 
-  const saveEdit = async (id: number) => {
-    const newAmount = Number.parseFloat(editAmount);
-    if (isNaN(newAmount)) {
-      cancelEdit();
+  const saveEdit = async () => {
+    if (!editingPrelevement) return;
+    const id = editingPrelevement.id;
+
+    const newAmount = Number.parseFloat(editForm.amount);
+    const newDay = Number.parseInt(editForm.day);
+    if (isNaN(newAmount) || isNaN(newDay) || !editForm.title.trim()) {
       return;
     }
 
+    const updatePayload = {
+      title: editForm.title.trim(),
+      day: newDay,
+      amount: newAmount,
+      category: editForm.category,
+      endDate: editForm.endDate || null,
+      totalAmount: editForm.totalAmount ? Number.parseFloat(editForm.totalAmount) : null,
+    };
+
     // Optimistic update
     const updatedPrelevements = prelevements.map((p) =>
-      p.id === id ? { ...p, amount: newAmount } : p
+      p.id === id ? { ...p, ...updatePayload } : p
     );
     setPrelevements(updatedPrelevements);
     await cachePrelevements(updatedPrelevements);
@@ -229,7 +255,7 @@ export default function Prelevement() {
         const response = await fetch(`/api/prelevements/${id}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ amount: newAmount }),
+          body: JSON.stringify(updatePayload),
         });
         if (response.ok) {
           const updatedPrelevement = await response.json();
@@ -240,18 +266,16 @@ export default function Prelevement() {
           await cachePrelevements(newList);
         }
       } else {
-        await queueAction("update", { id, data: { amount: newAmount } });
+        await queueAction("update", { id, data: updatePayload });
       }
     } catch {
-      await queueAction("update", { id, data: { amount: newAmount } });
+      await queueAction("update", { id, data: updatePayload });
     }
-    setEditingId(null);
-    setEditAmount("");
+    setEditingPrelevement(null);
   };
 
   const cancelEdit = () => {
-    setEditingId(null);
-    setEditAmount("");
+    setEditingPrelevement(null);
   };
 
   const addPrelevement = async () => {
@@ -501,8 +525,9 @@ export default function Prelevement() {
             )}
 
             {/* Desktop Table Header - Hidden on mobile */}
-            <div className="hidden lg:grid lg:grid-cols-5 gap-4 p-3 bg-muted rounded-lg font-semibold text-muted-foreground">
+            <div className="hidden lg:grid lg:grid-cols-6 gap-4 p-3 bg-muted rounded-lg font-semibold text-muted-foreground">
               <div>Titre</div>
+              <div>Catégorie</div>
               <div>Jour</div>
               <div>Montant</div>
               <div>Statut</div>
@@ -525,13 +550,24 @@ export default function Prelevement() {
                     <div className="lg:hidden space-y-3">
                       <div className="flex items-start justify-between">
                         <div className="flex-1 min-w-0">
-                          <h3
-                            className={`font-medium text-base ${
-                              prelevement.completed ? "line-through" : ""
-                            }`}
-                          >
-                            {prelevement.title}
-                          </h3>
+                          <div className="flex items-center gap-2">
+                            <h3
+                              className={`font-medium text-base ${
+                                prelevement.completed ? "line-through" : ""
+                              }`}
+                            >
+                              {prelevement.title}
+                            </h3>
+                            <span
+                              className="text-xs px-1.5 py-0.5 rounded-full font-medium"
+                              style={{
+                                backgroundColor: `${CATEGORY_COLORS[prelevement.category as Category] || CATEGORY_COLORS.autre}20`,
+                                color: CATEGORY_COLORS[prelevement.category as Category] || CATEGORY_COLORS.autre,
+                              }}
+                            >
+                              {CATEGORY_LABELS[prelevement.category as Category] || prelevement.category}
+                            </span>
+                          </div>
                           <div className="flex items-center gap-4 mt-1 text-sm">
                             <span className="text-muted-foreground">
                               Jour {prelevement.day.toString().padStart(2, "0")}
@@ -578,54 +614,27 @@ export default function Prelevement() {
                         );
                       })()}
 
-                      {editingId === prelevement.id ? (
-                        <div className="flex items-center space-x-2">
-                          <Input
-                            type="number"
-                            step="0.01"
-                            value={editAmount}
-                            onChange={(e) => setEditAmount(e.target.value)}
-                            className="flex-1"
-                          />
-                          <Button
-                            onClick={() => saveEdit(prelevement.id)}
-                            size="sm"
-                          >
-                            <Check className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            onClick={cancelEdit}
-                            size="sm"
-                            variant="outline"
-                          >
-                            <X className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      ) : (
-                        <div className="flex justify-end space-x-2">
-                          <Button
-                            onClick={() =>
-                              startEdit(prelevement.id, prelevement.amount)
-                            }
-                            size="sm"
-                            variant="ghost"
-                          >
-                            <Edit2 className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            onClick={() => deletePrelevement(prelevement.id)}
-                            size="sm"
-                            variant="ghost"
-                            className="text-destructive hover:text-destructive"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      )}
+                      <div className="flex justify-end space-x-2">
+                        <Button
+                          onClick={() => startEdit(prelevement)}
+                          size="sm"
+                          variant="ghost"
+                        >
+                          <Edit2 className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          onClick={() => deletePrelevement(prelevement.id)}
+                          size="sm"
+                          variant="ghost"
+                          className="text-destructive hover:text-destructive"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
                     </div>
 
                     {/* Desktop Layout */}
-                    <div className="hidden lg:grid lg:grid-cols-5 gap-4 items-center">
+                    <div className="hidden lg:grid lg:grid-cols-6 gap-4 items-center">
                       <div
                         className={`font-medium ${
                           prelevement.completed ? "line-through" : ""
@@ -633,38 +642,22 @@ export default function Prelevement() {
                       >
                         {prelevement.title}
                       </div>
+                      <div>
+                        <span
+                          className="text-xs px-2 py-1 rounded-full font-medium"
+                          style={{
+                            backgroundColor: `${CATEGORY_COLORS[prelevement.category as Category] || CATEGORY_COLORS.autre}20`,
+                            color: CATEGORY_COLORS[prelevement.category as Category] || CATEGORY_COLORS.autre,
+                          }}
+                        >
+                          {CATEGORY_LABELS[prelevement.category as Category] || prelevement.category}
+                        </span>
+                      </div>
                       <div>{prelevement.day.toString().padStart(2, "0")}</div>
                       <div className="font-mono">
-                        {editingId === prelevement.id ? (
-                          <div className="flex items-center space-x-2">
-                            <Input
-                              type="number"
-                              step="0.01"
-                              value={editAmount}
-                              onChange={(e) => setEditAmount(e.target.value)}
-                              className="w-24 h-8"
-                            />
-                            <Button
-                              onClick={() => saveEdit(prelevement.id)}
-                              size="sm"
-                              className="h-8 w-8 p-0"
-                            >
-                              <Check className="w-3 h-3" />
-                            </Button>
-                            <Button
-                              onClick={cancelEdit}
-                              size="sm"
-                              variant="outline"
-                              className="h-8 w-8 p-0"
-                            >
-                              <X className="w-3 h-3" />
-                            </Button>
-                          </div>
-                        ) : (
-                          <span className={getAmountColor(prelevement.amount)}>
-                            {prelevement.amount.toFixed(2)} €
-                          </span>
-                        )}
+                        <span className={getAmountColor(prelevement.amount)}>
+                          {prelevement.amount.toFixed(2)} €
+                        </span>
                       </div>
                       <div>
                         <Checkbox
@@ -675,18 +668,14 @@ export default function Prelevement() {
                         />
                       </div>
                       <div className="flex space-x-2">
-                        {editingId !== prelevement.id && (
-                          <Button
-                            onClick={() =>
-                              startEdit(prelevement.id, prelevement.amount)
-                            }
-                            size="sm"
-                            variant="ghost"
-                            className="h-8 w-8 p-0"
-                          >
-                            <Edit2 className="w-4 h-4" />
-                          </Button>
-                        )}
+                        <Button
+                          onClick={() => startEdit(prelevement)}
+                          size="sm"
+                          variant="ghost"
+                          className="h-8 w-8 p-0"
+                        >
+                          <Edit2 className="w-4 h-4" />
+                        </Button>
                         <Button
                           onClick={() => deletePrelevement(prelevement.id)}
                           size="sm"
@@ -742,6 +731,109 @@ export default function Prelevement() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Edit Dialog */}
+      <Dialog open={!!editingPrelevement} onOpenChange={(open) => !open && cancelEdit()}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Modifier le prélèvement</DialogTitle>
+            <DialogDescription>
+              Modifiez les informations du prélèvement.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 py-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Titre</label>
+              <Input
+                placeholder="Titre"
+                value={editForm.title}
+                onChange={(e) =>
+                  setEditForm({ ...editForm, title: e.target.value })
+                }
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Jour du mois</label>
+              <Input
+                type="number"
+                placeholder="Jour (1-31)"
+                min="1"
+                max="31"
+                value={editForm.day}
+                onChange={(e) =>
+                  setEditForm({ ...editForm, day: e.target.value })
+                }
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Montant</label>
+              <Input
+                type="number"
+                step="0.01"
+                placeholder="Montant (- pour revenu)"
+                value={editForm.amount}
+                onChange={(e) =>
+                  setEditForm({ ...editForm, amount: e.target.value })
+                }
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Catégorie</label>
+              <select
+                value={editForm.category}
+                onChange={(e) =>
+                  setEditForm({
+                    ...editForm,
+                    category: e.target.value as Category,
+                  })
+                }
+                className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
+                {CATEGORIES.map((cat) => (
+                  <option key={cat} value={cat}>
+                    {CATEGORY_LABELS[cat]}
+                  </option>
+                ))}
+              </select>
+            </div>
+            {editForm.category === "credit" && (
+              <>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Date de fin</label>
+                  <Input
+                    type="date"
+                    value={editForm.endDate}
+                    onChange={(e) =>
+                      setEditForm({ ...editForm, endDate: e.target.value })
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Montant total</label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    placeholder="Montant total du crédit"
+                    value={editForm.totalAmount}
+                    onChange={(e) =>
+                      setEditForm({ ...editForm, totalAmount: e.target.value })
+                    }
+                  />
+                </div>
+              </>
+            )}
+          </div>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button variant="outline" onClick={cancelEdit}>
+              Annuler
+            </Button>
+            <Button onClick={saveEdit}>
+              <Check className="w-4 h-4 mr-2" />
+              Enregistrer
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={showResetDialog} onOpenChange={setShowResetDialog}>
         <DialogContent>

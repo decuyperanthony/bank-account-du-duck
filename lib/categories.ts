@@ -7,6 +7,7 @@ export const CATEGORIES = [
   "transport",
   "credit",
   "impot",
+  "courses",
   "revenu",
   "autre",
 ] as const;
@@ -21,6 +22,7 @@ export const CATEGORY_LABELS: Record<Category, string> = {
   transport: "Transport",
   credit: "Crédit",
   impot: "Impôts",
+  courses: "Courses",
   revenu: "Revenus",
   autre: "Autre",
 };
@@ -33,6 +35,7 @@ export const CATEGORY_COLORS: Record<Category, string> = {
   transport: "#ec4899",
   credit: "#ef4444",
   impot: "#6b7280",
+  courses: "#f97316",
   revenu: "#22c55e",
   autre: "#64748b",
 };
