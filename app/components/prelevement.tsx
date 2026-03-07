@@ -720,6 +720,14 @@ export default function Prelevement() {
               return (
                 <>
                   {/* Liste des prélèvements à venir */}
+                  {pending.length > 0 && (
+                    <div className="flex items-center gap-2 pb-1">
+                      <Calendar className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-sm font-medium text-muted-foreground">
+                        Reste à prélever ({pending.length})
+                      </span>
+                    </div>
+                  )}
                   <div className="space-y-3">
                     {pending.map(renderItem)}
                   </div>
