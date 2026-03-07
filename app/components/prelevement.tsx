@@ -534,159 +534,65 @@ export default function Prelevement() {
               <div>Actions</div>
             </div>
 
-            <div className="space-y-3">
-              {[...prelevements]
-                .sort((a, b) => a.day - b.day)
-                .map((prelevement) => (
-                  <div
-                    key={prelevement.id}
-                    className={`border rounded-lg p-4 ${
-                      prelevement.completed
-                        ? "bg-muted/50 text-muted-foreground"
-                        : "bg-card"
-                    }`}
-                  >
-                    {/* Mobile Layout */}
-                    <div className="lg:hidden space-y-3">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <h3
-                              className={`font-medium text-base ${
-                                prelevement.completed ? "line-through" : ""
-                              }`}
-                            >
-                              {prelevement.title}
-                            </h3>
-                            <span
-                              className="text-xs px-1.5 py-0.5 rounded-full font-medium"
-                              style={{
-                                backgroundColor: `${CATEGORY_COLORS[prelevement.category as Category] || CATEGORY_COLORS.autre}20`,
-                                color: CATEGORY_COLORS[prelevement.category as Category] || CATEGORY_COLORS.autre,
-                              }}
-                            >
-                              {CATEGORY_LABELS[prelevement.category as Category] || prelevement.category}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-4 mt-1 text-sm">
-                            <span className="text-muted-foreground">
-                              Jour {prelevement.day.toString().padStart(2, "0")}
-                            </span>
-                            <span
-                              className={`font-mono font-medium ${getAmountColor(
-                                prelevement.amount
-                              )} ${prelevement.completed ? "opacity-60" : ""}`}
-                            >
-                              {prelevement.amount.toFixed(2)} €
-                            </span>
-                          </div>
+            {/* Prélèvements à venir */}
+            {(() => {
+              const sorted = [...prelevements].sort((a, b) => a.day - b.day);
+              const pending = sorted.filter((p) => !p.completed);
+              const completed = sorted.filter((p) => p.completed);
+
+              const renderItem = (prelevement: PrelevementType) => (
+                <div
+                  key={prelevement.id}
+                  className={`border rounded-lg p-4 ${
+                    prelevement.completed
+                      ? "bg-muted/50 text-muted-foreground"
+                      : "bg-card"
+                  }`}
+                >
+                  {/* Mobile Layout */}
+                  <div className="lg:hidden space-y-3">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <h3
+                            className={`font-medium text-base ${
+                              prelevement.completed ? "line-through" : ""
+                            }`}
+                          >
+                            {prelevement.title}
+                          </h3>
+                          <span
+                            className="text-xs px-1.5 py-0.5 rounded-full font-medium"
+                            style={{
+                              backgroundColor: `${CATEGORY_COLORS[prelevement.category as Category] || CATEGORY_COLORS.autre}20`,
+                              color: CATEGORY_COLORS[prelevement.category as Category] || CATEGORY_COLORS.autre,
+                            }}
+                          >
+                            {CATEGORY_LABELS[prelevement.category as Category] || prelevement.category}
+                          </span>
                         </div>
-                        <Checkbox
-                          checked={prelevement.completed}
-                          onCheckedChange={() =>
-                            togglePrelevement(prelevement.id)
-                          }
-                        />
+                        <div className="flex items-center gap-4 mt-1 text-sm">
+                          <span className="text-muted-foreground">
+                            Jour {prelevement.day.toString().padStart(2, "0")}
+                          </span>
+                          <span
+                            className={`font-mono font-medium ${getAmountColor(
+                              prelevement.amount
+                            )} ${prelevement.completed ? "opacity-60" : ""}`}
+                          >
+                            {prelevement.amount.toFixed(2)} €
+                          </span>
+                        </div>
                       </div>
-
-                      {/* Credit Progress Bar - Mobile */}
-                      {(() => {
-                        const creditInfo = calculateCreditProgress(
-                          prelevement.endDate,
-                          prelevement.totalAmount,
-                          prelevement.amount
-                        );
-                        if (!creditInfo) return null;
-                        return (
-                          <div className="space-y-1">
-                            <div className="flex items-center justify-between text-xs text-muted-foreground">
-                              <span className="flex items-center gap-1">
-                                <Calendar className="w-3 h-3" />
-                                {creditInfo.remainingMonths} mois restants
-                              </span>
-                              <span>{creditInfo.progress}%</span>
-                            </div>
-                            <Progress value={creditInfo.progress} className="h-2" />
-                            <div className="text-xs text-muted-foreground">
-                              {creditInfo.paidAmount.toFixed(0)}€ / {prelevement.totalAmount?.toFixed(0)}€
-                            </div>
-                          </div>
-                        );
-                      })()}
-
-                      <div className="flex justify-end space-x-2">
-                        <Button
-                          onClick={() => startEdit(prelevement)}
-                          size="sm"
-                          variant="ghost"
-                        >
-                          <Edit2 className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          onClick={() => deletePrelevement(prelevement.id)}
-                          size="sm"
-                          variant="ghost"
-                          className="text-destructive hover:text-destructive"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
+                      <Checkbox
+                        checked={prelevement.completed}
+                        onCheckedChange={() =>
+                          togglePrelevement(prelevement.id)
+                        }
+                      />
                     </div>
 
-                    {/* Desktop Layout */}
-                    <div className="hidden lg:grid lg:grid-cols-6 gap-4 items-center">
-                      <div
-                        className={`font-medium ${
-                          prelevement.completed ? "line-through" : ""
-                        }`}
-                      >
-                        {prelevement.title}
-                      </div>
-                      <div>
-                        <span
-                          className="text-xs px-2 py-1 rounded-full font-medium"
-                          style={{
-                            backgroundColor: `${CATEGORY_COLORS[prelevement.category as Category] || CATEGORY_COLORS.autre}20`,
-                            color: CATEGORY_COLORS[prelevement.category as Category] || CATEGORY_COLORS.autre,
-                          }}
-                        >
-                          {CATEGORY_LABELS[prelevement.category as Category] || prelevement.category}
-                        </span>
-                      </div>
-                      <div>{prelevement.day.toString().padStart(2, "0")}</div>
-                      <div className="font-mono">
-                        <span className={getAmountColor(prelevement.amount)}>
-                          {prelevement.amount.toFixed(2)} €
-                        </span>
-                      </div>
-                      <div>
-                        <Checkbox
-                          checked={prelevement.completed}
-                          onCheckedChange={() =>
-                            togglePrelevement(prelevement.id)
-                          }
-                        />
-                      </div>
-                      <div className="flex space-x-2">
-                        <Button
-                          onClick={() => startEdit(prelevement)}
-                          size="sm"
-                          variant="ghost"
-                          className="h-8 w-8 p-0"
-                        >
-                          <Edit2 className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          onClick={() => deletePrelevement(prelevement.id)}
-                          size="sm"
-                          variant="ghost"
-                          className="h-8 w-8 p-0 text-destructive hover:text-destructive"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </div>
-                    {/* Credit Progress Bar - Desktop */}
+                    {/* Credit Progress Bar - Mobile */}
                     {(() => {
                       const creditInfo = calculateCreditProgress(
                         prelevement.endDate,
@@ -695,39 +601,169 @@ export default function Prelevement() {
                       );
                       if (!creditInfo) return null;
                       return (
-                        <div className="hidden lg:block mt-3 pt-3 border-t border-border/50">
-                          <div className="flex items-center gap-4">
-                            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                        <div className="space-y-1">
+                          <div className="flex items-center justify-between text-xs text-muted-foreground">
+                            <span className="flex items-center gap-1">
                               <Calendar className="w-3 h-3" />
                               {creditInfo.remainingMonths} mois restants
-                            </div>
-                            <div className="flex-1">
-                              <Progress value={creditInfo.progress} className="h-2" />
-                            </div>
-                            <div className="text-xs text-muted-foreground min-w-[100px] text-right">
-                              {creditInfo.paidAmount.toFixed(0)}€ / {prelevement.totalAmount?.toFixed(0)}€ ({creditInfo.progress}%)
-                            </div>
+                            </span>
+                            <span>{creditInfo.progress}%</span>
+                          </div>
+                          <Progress value={creditInfo.progress} className="h-2" />
+                          <div className="text-xs text-muted-foreground">
+                            {creditInfo.paidAmount.toFixed(0)}€ / {prelevement.totalAmount?.toFixed(0)}€
                           </div>
                         </div>
                       );
                     })()}
-                  </div>
-                ))}
-            </div>
 
-            <div className="p-4 border rounded-lg bg-muted/50">
-              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
-                <span className="text-lg font-semibold">Total à venir</span>
-                <span className="text-xl font-bold text-foreground">
-                  {Math.abs(totalAVenir).toFixed(2)} €
-                </span>
-              </div>
-              <div className="text-xs text-muted-foreground mt-2">
-                {isOnline
-                  ? "Données synchronisées avec la base de données"
-                  : "Mode hors ligne - données locales"}
-              </div>
-            </div>
+                    <div className="flex justify-end space-x-2">
+                      <Button
+                        onClick={() => startEdit(prelevement)}
+                        size="sm"
+                        variant="ghost"
+                      >
+                        <Edit2 className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        onClick={() => deletePrelevement(prelevement.id)}
+                        size="sm"
+                        variant="ghost"
+                        className="text-destructive hover:text-destructive"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* Desktop Layout */}
+                  <div className="hidden lg:grid lg:grid-cols-6 gap-4 items-center">
+                    <div
+                      className={`font-medium ${
+                        prelevement.completed ? "line-through" : ""
+                      }`}
+                    >
+                      {prelevement.title}
+                    </div>
+                    <div>
+                      <span
+                        className="text-xs px-2 py-1 rounded-full font-medium"
+                        style={{
+                          backgroundColor: `${CATEGORY_COLORS[prelevement.category as Category] || CATEGORY_COLORS.autre}20`,
+                          color: CATEGORY_COLORS[prelevement.category as Category] || CATEGORY_COLORS.autre,
+                        }}
+                      >
+                        {CATEGORY_LABELS[prelevement.category as Category] || prelevement.category}
+                      </span>
+                    </div>
+                    <div>{prelevement.day.toString().padStart(2, "0")}</div>
+                    <div className="font-mono">
+                      <span className={getAmountColor(prelevement.amount)}>
+                        {prelevement.amount.toFixed(2)} €
+                      </span>
+                    </div>
+                    <div>
+                      <Checkbox
+                        checked={prelevement.completed}
+                        onCheckedChange={() =>
+                          togglePrelevement(prelevement.id)
+                        }
+                      />
+                    </div>
+                    <div className="flex space-x-2">
+                      <Button
+                        onClick={() => startEdit(prelevement)}
+                        size="sm"
+                        variant="ghost"
+                        className="h-8 w-8 p-0"
+                      >
+                        <Edit2 className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        onClick={() => deletePrelevement(prelevement.id)}
+                        size="sm"
+                        variant="ghost"
+                        className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                  {/* Credit Progress Bar - Desktop */}
+                  {(() => {
+                    const creditInfo = calculateCreditProgress(
+                      prelevement.endDate,
+                      prelevement.totalAmount,
+                      prelevement.amount
+                    );
+                    if (!creditInfo) return null;
+                    return (
+                      <div className="hidden lg:block mt-3 pt-3 border-t border-border/50">
+                        <div className="flex items-center gap-4">
+                          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                            <Calendar className="w-3 h-3" />
+                            {creditInfo.remainingMonths} mois restants
+                          </div>
+                          <div className="flex-1">
+                            <Progress value={creditInfo.progress} className="h-2" />
+                          </div>
+                          <div className="text-xs text-muted-foreground min-w-[100px] text-right">
+                            {creditInfo.paidAmount.toFixed(0)}€ / {prelevement.totalAmount?.toFixed(0)}€ ({creditInfo.progress}%)
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </div>
+              );
+
+              return (
+                <>
+                  {/* Liste des prélèvements à venir */}
+                  {pending.length > 0 && (
+                    <div className="flex items-center gap-2 pb-1">
+                      <Calendar className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-sm font-medium text-muted-foreground">
+                        Reste à prélever ({pending.length})
+                      </span>
+                    </div>
+                  )}
+                  <div className="space-y-3">
+                    {pending.map(renderItem)}
+                  </div>
+
+                  {/* Total à venir */}
+                  <div className="p-4 border rounded-lg bg-muted/50">
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
+                      <span className="text-lg font-semibold">Total à venir</span>
+                      <span className="text-xl font-bold text-foreground">
+                        {Math.abs(totalAVenir).toFixed(2)} €
+                      </span>
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-2">
+                      {isOnline
+                        ? "Données synchronisées avec la base de données"
+                        : "Mode hors ligne - données locales"}
+                    </div>
+                  </div>
+
+                  {/* Liste des prélèvements déjà prélevés */}
+                  {completed.length > 0 && (
+                    <>
+                      <div className="flex items-center gap-2 pt-2">
+                        <Check className="w-4 h-4 text-muted-foreground" />
+                        <span className="text-sm font-medium text-muted-foreground">
+                          Déjà prélevés ({completed.length})
+                        </span>
+                      </div>
+                      <div className="space-y-3">
+                        {completed.map(renderItem)}
+                      </div>
+                    </>
+                  )}
+                </>
+              );
+            })()}
           </CardContent>
         </Card>
       </div>
