@@ -719,6 +719,21 @@ export default function Prelevement() {
 
               return (
                 <>
+                  {/* Total à venir */}
+                  <div className="p-5 rounded-xl border-2 border-primary bg-primary/10">
+                    <div className="flex items-center justify-between">
+                      <span className="text-base font-semibold text-primary">Total à venir</span>
+                      <span className="text-2xl font-bold text-primary">
+                        {Math.abs(totalAVenir).toFixed(2)} €
+                      </span>
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-1">
+                      {isOnline
+                        ? "Données synchronisées avec la base de données"
+                        : "Mode hors ligne - données locales"}
+                    </div>
+                  </div>
+
                   {/* Liste des prélèvements à venir */}
                   {pending.length > 0 && (
                     <div className="flex items-center gap-2 pb-1">
@@ -730,21 +745,6 @@ export default function Prelevement() {
                   )}
                   <div className="space-y-3">
                     {pending.map(renderItem)}
-                  </div>
-
-                  {/* Total à venir */}
-                  <div className="p-4 border rounded-lg bg-muted/50">
-                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
-                      <span className="text-lg font-semibold">Total à venir</span>
-                      <span className="text-xl font-bold text-foreground">
-                        {Math.abs(totalAVenir).toFixed(2)} €
-                      </span>
-                    </div>
-                    <div className="text-xs text-muted-foreground mt-2">
-                      {isOnline
-                        ? "Données synchronisées avec la base de données"
-                        : "Mode hors ligne - données locales"}
-                    </div>
                   </div>
 
                   {/* Liste des prélèvements déjà prélevés */}
