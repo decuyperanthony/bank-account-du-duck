@@ -11,6 +11,18 @@
 
 ---
 
+## Apercu
+
+<!-- Ajoute tes screenshots ici (glisse-les dans le dossier docs/ ou utilise des liens directs) -->
+
+| Dashboard | Statistiques | Calendrier |
+|:-:|:-:|:-:|
+| ![Dashboard](docs/screenshots/dashboard.png) | ![Stats](docs/screenshots/stats.png) | ![Calendar](docs/screenshots/calendar.png) |
+
+> **Pour ajouter tes screenshots :** cree un dossier `docs/screenshots/` et places-y tes images (`dashboard.png`, `stats.png`, `calendar.png`). Supprime ensuite ce bloc de texte.
+
+---
+
 ## Pourquoi ce projet ?
 
 Beaucoup d'applications bancaires montrent l'historique des transactions, mais aucune ne donne une **vue d'ensemble claire et interactive** des prelevements recurrents. Bank Account du Duck permet de :
