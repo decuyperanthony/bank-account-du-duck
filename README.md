@@ -1,6 +1,6 @@
 # Bank Account du Duck
 
-> Application web de gestion des prelevements bancaires recurrents — abonnements, loyer, credits, impots — avec une vision claire de ses depenses mensuelles.
+> A web app to manage recurring bank debits — subscriptions, rent, loans, taxes — with a clear overview of your monthly expenses.
 
 ![Next.js](https://img.shields.io/badge/Next.js_16-black?logo=next.js&logoColor=white)
 ![React](https://img.shields.io/badge/React_19-61DAFB?logo=react&logoColor=black)
@@ -11,76 +11,82 @@
 
 ---
 
-## Apercu
+## Screenshots
 
-<!-- Ajoute tes screenshots ici (glisse-les dans le dossier docs/ ou utilise des liens directs) -->
+<p align="center">
+  <img src="docs/screenshots/dashboard.jpg" width="220" alt="Dashboard — recurring debits overview" />
+  &nbsp;&nbsp;
+  <img src="docs/screenshots/credits.jpg" width="220" alt="Credits — loan progress tracking" />
+  &nbsp;&nbsp;
+  <img src="docs/screenshots/stats-breakdown.jpg" width="220" alt="Statistics — expense breakdown by category" />
+</p>
 
-| Dashboard | Statistiques | Calendrier |
-|:-:|:-:|:-:|
-| ![Dashboard](docs/screenshots/dashboard.png) | ![Stats](docs/screenshots/stats.png) | ![Calendar](docs/screenshots/calendar.png) |
-
-> **Pour ajouter tes screenshots :** cree un dossier `docs/screenshots/` et places-y tes images (`dashboard.png`, `stats.png`, `calendar.png`). Supprime ensuite ce bloc de texte.
-
----
-
-## Pourquoi ce projet ?
-
-Beaucoup d'applications bancaires montrent l'historique des transactions, mais aucune ne donne une **vue d'ensemble claire et interactive** des prelevements recurrents. Bank Account du Duck permet de :
-
-- Visualiser **tous ses prelevements** du mois sur une seule page
-- Suivre ce qui a **deja ete preleve** vs ce qui **reste a venir**
-- Analyser ses depenses par **categorie** avec des statistiques detaillees
-- Consulter un **calendrier** des prelevements a venir
-- Fonctionner **hors-ligne** grace au mode PWA avec synchronisation automatique
+<p align="center">
+  <img src="docs/screenshots/stats-overview.jpg" width="220" alt="Statistics — income vs expenses overview" />
+  &nbsp;&nbsp;
+  <img src="docs/screenshots/calendar.jpg" width="220" alt="Calendar — monthly debit schedule" />
+</p>
 
 ---
 
-## Fonctionnalites
+## Why this project?
 
-### Dashboard principal
-- Liste des prelevements du mois, separes en "a venir" et "deja preleves"
-- Total mensuel avec vue d'ensemble en temps reel
-- Marquage rapide d'un prelevement comme effectue (checkbox)
-- CRUD complet : ajout, modification, suppression de prelevements
+Most banking apps show transaction history, but none give a **clear, interactive overview** of recurring debits. Bank Account du Duck lets you:
 
-### Statistiques
-- Repartition des depenses par categorie (telecom, logement, streaming, etc.)
-- Vue detaillee avec montants et pourcentages
-- Suivi des revenus vs depenses
-- Gestion d'un budget courses personnalise
+- View **all monthly debits** on a single page
+- Track what's **already been debited** vs what's **still upcoming**
+- Analyze expenses by **category** with detailed statistics
+- Browse a **calendar** of upcoming debits
+- Work **offline** with PWA mode and automatic sync
 
-### Calendrier
-- Vue mensuelle avec indication des jours de prelevement
-- Navigation entre les mois
-- Detail des prelevements au clic sur un jour
-- Filtrage automatique des credits arrives a echeance
+---
 
-### Reglages
-- Verification du statut de connexion a la base de donnees
-- Export des donnees au format JSON
-- Theme clair / sombre
-- Statut de connexion en temps reel
+## Features
+
+### Main Dashboard
+- Monthly debit list, split into "upcoming" and "already debited"
+- Real-time monthly total overview
+- Quick mark as debited (checkbox)
+- Full CRUD: add, edit, delete debits
+
+### Statistics
+- Expense breakdown by category (telecom, housing, streaming, etc.)
+- Detailed view with amounts and percentages
+- Income vs expenses tracking
+- Custom grocery budget management
+
+### Calendar
+- Monthly view with debit day indicators (color-coded dots)
+- Month-to-month navigation
+- Debit details on day click
+- Auto-filtering of expired loans
+
+### Settings
+- Database connection status check
+- JSON data export
+- Light / dark theme
+- Real-time connection status
 
 ### PWA & Offline
-- Installation sur mobile comme une app native
-- Mode offline avec stockage IndexedDB
-- Synchronisation automatique au retour en ligne
+- Install on mobile as a native app
+- Offline mode with IndexedDB storage
+- Automatic sync when back online
 
-### Authentification
-- Connexion securisee via Supabase Auth (email/password)
-- Middleware de protection des routes
-- Reset de mot de passe
+### Authentication
+- Secure login via Supabase Auth (email/password)
+- Route protection middleware
+- Password reset
 
 ---
 
-## Stack technique
+## Tech Stack
 
-| Couche | Technologie |
-|---|---|
+| Layer | Technology |
+|-------|-----------|
 | **Framework** | Next.js 16 (App Router, Turbopack) |
 | **UI** | React 19 + TypeScript |
 | **Styling** | Tailwind CSS 4 + Radix UI |
-| **Base de donnees** | PostgreSQL via Neon (serverless) |
+| **Database** | PostgreSQL via Neon (serverless) |
 | **ORM** | Drizzle ORM |
 | **Auth** | Supabase Auth |
 | **Validation** | Zod |
@@ -95,104 +101,104 @@ Beaucoup d'applications bancaires montrent l'historique des transactions, mais a
 app/
   api/
     prelevements/       # CRUD + toggle + reset
-    db-status/          # Health check DB
-    export/             # Export JSON
-  calendar/             # Vue calendrier
-  stats/                # Statistiques par categorie
-  settings/             # Reglages utilisateur
-  login/                # Authentification
+    db-status/          # DB health check
+    export/             # JSON export
+  calendar/             # Calendar view
+  stats/                # Category statistics
+  settings/             # User settings
+  login/                # Authentication
 
 components/
   layout/               # Header, BottomNav, PageLayout
   ui/                   # Design system (Button, Card, Dialog, etc.)
 
 db/
-  schema.ts             # Schema Drizzle (table prelevements)
-  seed.ts               # Donnees de demonstration
+  schema.ts             # Drizzle schema (prelevements table)
+  seed.ts               # Demo data
 
 lib/
-  categories.ts         # Categories et couleurs
-  routes.ts             # Constantes de routes
-  offline-db.ts         # IndexedDB pour le mode offline
-  supabase/             # Clients Supabase (client + server)
+  categories.ts         # Categories and colors
+  routes.ts             # Route constants
+  offline-db.ts         # IndexedDB for offline mode
+  supabase/             # Supabase clients (client + server)
 
 hooks/
-  useOfflineSync.ts     # Hook de synchronisation offline
+  useOfflineSync.ts     # Offline sync hook
 ```
 
 ---
 
-## Modele de donnees
+## Data Model
 
-### Table `prelevements`
+### `prelevements` table
 
-| Colonne | Type | Description |
-|---|---|---|
-| `id` | `serial` | Cle primaire |
-| `title` | `text` | Nom du prelevement |
-| `day` | `integer` | Jour du mois (1-31) |
-| `amount` | `real` | Montant (negatif = revenu) |
-| `category` | `text` | Categorie |
-| `completed` | `boolean` | Preleve ce mois-ci |
-| `end_date` | `timestamp` | Date de fin (credits) |
-| `total_amount` | `real` | Montant total du credit |
-| `created_at` | `timestamp` | Date de creation |
-| `updated_at` | `timestamp` | Date de mise a jour |
+| Column | Type | Description |
+|--------|------|-------------|
+| `id` | `serial` | Primary key |
+| `title` | `text` | Debit name |
+| `day` | `integer` | Day of month (1-31) |
+| `amount` | `real` | Amount (negative = income) |
+| `category` | `text` | Category |
+| `completed` | `boolean` | Debited this month |
+| `end_date` | `timestamp` | End date (loans) |
+| `total_amount` | `real` | Total loan amount |
+| `created_at` | `timestamp` | Creation date |
+| `updated_at` | `timestamp` | Last update |
 
-**9 categories** : telecom, logement, streaming, assurance, transport, credit, impot, revenu, autre
+**9 categories**: telecom, housing, streaming, insurance, transport, loan, tax, income, other
 
 ---
 
-## Installation
+## Getting Started
 
-### Prerequis
+### Prerequisites
 
 - Node.js 18+
-- Un compte [Neon](https://neon.tech) (base PostgreSQL serverless)
-- Un projet [Supabase](https://supabase.com) (authentification)
+- A [Neon](https://neon.tech) account (serverless PostgreSQL)
+- A [Supabase](https://supabase.com) project (authentication)
 
 ### Setup
 
 ```bash
-# Cloner le repo
+# Clone the repository
 git clone https://github.com/decuyperanthony/bank-account-du-duck.git
 cd bank-account-du-duck
 
-# Installer les dependances
+# Install dependencies
 npm install
 
-# Configurer les variables d'environnement
+# Configure environment variables
 cp .env.example .env.local
-# Remplir DATABASE_URL, NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY
+# Fill in DATABASE_URL, NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-# Pousser le schema vers la DB
+# Push schema to database
 npx drizzle-kit push
 
-# (Optionnel) Peupler avec des donnees de demo
+# (Optional) Seed with demo data
 npx tsx db/seed.ts
 
-# Lancer le serveur de developpement
+# Start development server
 npm run dev
 ```
 
-L'application est accessible sur [http://localhost:3000](http://localhost:3000).
+Open [http://localhost:3000](http://localhost:3000) to see the app.
 
 ---
 
-## Scripts disponibles
+## Scripts
 
-| Commande | Description |
-|---|---|
-| `npm run dev` | Serveur de dev (Turbopack) |
-| `npm run build` | Build de production |
-| `npm run lint` | Linter ESLint |
-| `npm run db:push` | Push du schema vers la DB |
-| `npm run db:seed` | Seed des donnees de demo |
-| `npm run db:studio` | Interface Drizzle Studio |
-| `npm run generate:pwa` | Generation des icones PWA |
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Dev server (Turbopack) |
+| `npm run build` | Production build |
+| `npm run lint` | ESLint |
+| `npm run db:push` | Push schema to DB |
+| `npm run db:seed` | Seed demo data |
+| `npm run db:studio` | Drizzle Studio GUI |
+| `npm run generate:pwa` | Generate PWA icons |
 
 ---
 
-## Licence
+## License
 
 MIT
