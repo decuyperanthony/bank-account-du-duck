@@ -14,17 +14,17 @@
 ## Screenshots
 
 <p align="center">
-  <img src="docs/screenshots/dashboard.jpg" width="220" alt="Dashboard — recurring debits overview" />
-  &nbsp;&nbsp;
-  <img src="docs/screenshots/credits.jpg" width="220" alt="Credits — loan progress tracking" />
-  &nbsp;&nbsp;
-  <img src="docs/screenshots/stats-breakdown.jpg" width="220" alt="Statistics — expense breakdown by category" />
+  <img src="docs/screenshots/stats-breakdown.jpg" width="280" alt="Statistics — expense breakdown by category" />
+  &nbsp;&nbsp;&nbsp;&nbsp;
+  <img src="docs/screenshots/calendar.jpg" width="280" alt="Calendar — monthly debit schedule" />
 </p>
 
 <p align="center">
-  <img src="docs/screenshots/stats-overview.jpg" width="220" alt="Statistics — income vs expenses overview" />
+  <img src="docs/screenshots/dashboard.jpg" width="200" alt="Dashboard — recurring debits overview" />
   &nbsp;&nbsp;
-  <img src="docs/screenshots/calendar.jpg" width="220" alt="Calendar — monthly debit schedule" />
+  <img src="docs/screenshots/credits.jpg" width="200" alt="Credits — loan progress tracking" />
+  &nbsp;&nbsp;
+  <img src="docs/screenshots/stats-overview.jpg" width="200" alt="Statistics — income vs expenses overview" />
 </p>
 
 ---
