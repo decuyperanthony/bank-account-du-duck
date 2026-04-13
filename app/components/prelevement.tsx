@@ -437,178 +437,6 @@ export default function Prelevement() {
           </CardHeader>
 
           <CardContent className="space-y-4">
-            {showAddForm && (
-              <div className="p-4 border rounded-lg bg-muted/50 space-y-4">
-                <div>
-                  <h3 className="font-semibold text-base">Nouveau prélèvement</h3>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Renseigne les infos du prélèvement récurrent. Les montants négatifs
-                    représentent des revenus (ex : CAF, salaire).
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-1.5 sm:col-span-2">
-                    <label className="text-sm font-medium">Intitulé</label>
-                    <Input
-                      placeholder="Ex : SFR, Loyer, Scooter..."
-                      value={newPrelevement.title}
-                      onChange={(e) =>
-                        setNewPrelevement({
-                          ...newPrelevement,
-                          title: e.target.value,
-                        })
-                      }
-                    />
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="text-sm font-medium">Jour du mois</label>
-                    <Input
-                      type="number"
-                      placeholder="1 - 31"
-                      min="1"
-                      max="31"
-                      value={newPrelevement.day}
-                      onChange={(e) =>
-                        setNewPrelevement({
-                          ...newPrelevement,
-                          day: e.target.value,
-                        })
-                      }
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      Jour de prélèvement sur le compte.
-                    </p>
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="text-sm font-medium">Montant mensuel (€)</label>
-                    <Input
-                      type="number"
-                      step="0.01"
-                      placeholder="Ex : 29.99 ou -75 pour un revenu"
-                      value={newPrelevement.amount}
-                      onChange={(e) =>
-                        setNewPrelevement({
-                          ...newPrelevement,
-                          amount: e.target.value,
-                        })
-                      }
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      Utilise un montant négatif pour un revenu.
-                    </p>
-                  </div>
-
-                  <div className="space-y-1.5 sm:col-span-2">
-                    <label className="text-sm font-medium">Catégorie</label>
-                    <select
-                      value={newPrelevement.category}
-                      onChange={(e) =>
-                        setNewPrelevement({
-                          ...newPrelevement,
-                          category: e.target.value as Category,
-                        })
-                      }
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                    >
-                      {CATEGORIES.map((cat) => (
-                        <option key={cat} value={cat}>
-                          {CATEGORY_LABELS[cat]}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                <div className="pt-2 border-t">
-                  <div className="flex items-start space-x-2">
-                    <Checkbox
-                      id="installment-new"
-                      checked={newPrelevement.isInstallment}
-                      onCheckedChange={(checked) =>
-                        setNewPrelevement({
-                          ...newPrelevement,
-                          isInstallment: checked === true,
-                        })
-                      }
-                    />
-                    <div className="space-y-1">
-                      <label
-                        htmlFor="installment-new"
-                        className="text-sm font-medium cursor-pointer"
-                      >
-                        Paiement étalé sur plusieurs mois
-                      </label>
-                      <p className="text-xs text-muted-foreground">
-                        Coche cette case pour un achat remboursé en plusieurs fois
-                        (crédit, scooter, Dyson, Apple...). Tu verras la progression du
-                        remboursement.
-                      </p>
-                    </div>
-                  </div>
-
-                  {newPrelevement.isInstallment && (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4 pl-6">
-                      <div className="space-y-1.5">
-                        <label className="text-sm font-medium">Date de fin</label>
-                        <Input
-                          type="date"
-                          value={newPrelevement.endDate}
-                          onChange={(e) =>
-                            setNewPrelevement({
-                              ...newPrelevement,
-                              endDate: e.target.value,
-                            })
-                          }
-                        />
-                        <p className="text-xs text-muted-foreground">
-                          Dernière mensualité prévue.
-                        </p>
-                      </div>
-                      <div className="space-y-1.5">
-                        <label className="text-sm font-medium">Montant total (€)</label>
-                        <Input
-                          type="number"
-                          step="0.01"
-                          placeholder="Ex : 3600 pour un scooter"
-                          value={newPrelevement.totalAmount}
-                          onChange={(e) =>
-                            setNewPrelevement({
-                              ...newPrelevement,
-                              totalAmount: e.target.value,
-                            })
-                          }
-                        />
-                        <p className="text-xs text-muted-foreground">
-                          Coût total de l&apos;achat, toutes mensualités cumulées.
-                        </p>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                <div className="flex justify-end space-x-2">
-                  <Button
-                    onClick={() => setShowAddForm(false)}
-                    size="sm"
-                    variant="outline"
-                  >
-                    <X className="w-4 h-4 mr-2" />
-                    Annuler
-                  </Button>
-                  <Button
-                    onClick={addPrelevement}
-                    size="sm"
-                  >
-                    <Check className="w-4 h-4 mr-2" />
-                    Valider
-                  </Button>
-                </div>
-              </div>
-            )}
-
             {/* Desktop Table Header - Hidden on mobile */}
             <div className="hidden lg:grid lg:grid-cols-6 gap-4 p-3 bg-muted rounded-lg font-semibold text-muted-foreground">
               <div>Titre</div>
@@ -852,6 +680,187 @@ export default function Prelevement() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Add Dialog */}
+      <Dialog
+        open={showAddForm}
+        onOpenChange={(open) => {
+          if (!open) {
+            setShowAddForm(false);
+            setNewPrelevement({
+              title: "",
+              day: "",
+              amount: "",
+              category: "autre",
+              isInstallment: false,
+              endDate: "",
+              totalAmount: "",
+            });
+          }
+        }}
+      >
+        <DialogContent className="max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Nouveau prélèvement</DialogTitle>
+            <DialogDescription>
+              Renseigne les infos du prélèvement récurrent. Les montants négatifs
+              représentent des revenus (ex : CAF, salaire).
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 py-4">
+            <div className="space-y-1.5 sm:col-span-2">
+              <label className="text-sm font-medium">Intitulé</label>
+              <Input
+                placeholder="Ex : SFR, Loyer, Scooter..."
+                value={newPrelevement.title}
+                onChange={(e) =>
+                  setNewPrelevement({
+                    ...newPrelevement,
+                    title: e.target.value,
+                  })
+                }
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium">Jour du mois</label>
+              <Input
+                type="number"
+                placeholder="1 - 31"
+                min="1"
+                max="31"
+                value={newPrelevement.day}
+                onChange={(e) =>
+                  setNewPrelevement({
+                    ...newPrelevement,
+                    day: e.target.value,
+                  })
+                }
+              />
+              <p className="text-xs text-muted-foreground">
+                Jour de prélèvement sur le compte.
+              </p>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium">Montant mensuel (€)</label>
+              <Input
+                type="number"
+                step="0.01"
+                placeholder="Ex : 29.99 ou -75 pour un revenu"
+                value={newPrelevement.amount}
+                onChange={(e) =>
+                  setNewPrelevement({
+                    ...newPrelevement,
+                    amount: e.target.value,
+                  })
+                }
+              />
+              <p className="text-xs text-muted-foreground">
+                Utilise un montant négatif pour un revenu.
+              </p>
+            </div>
+
+            <div className="space-y-1.5 sm:col-span-2">
+              <label className="text-sm font-medium">Catégorie</label>
+              <select
+                value={newPrelevement.category}
+                onChange={(e) =>
+                  setNewPrelevement({
+                    ...newPrelevement,
+                    category: e.target.value as Category,
+                  })
+                }
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
+                {CATEGORIES.map((cat) => (
+                  <option key={cat} value={cat}>
+                    {CATEGORY_LABELS[cat]}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="pt-2 border-t">
+            <div className="flex items-start space-x-2">
+              <Checkbox
+                id="installment-new"
+                checked={newPrelevement.isInstallment}
+                onCheckedChange={(checked) =>
+                  setNewPrelevement({
+                    ...newPrelevement,
+                    isInstallment: checked === true,
+                  })
+                }
+              />
+              <div className="space-y-1">
+                <label
+                  htmlFor="installment-new"
+                  className="text-sm font-medium cursor-pointer"
+                >
+                  Paiement étalé sur plusieurs mois
+                </label>
+                <p className="text-xs text-muted-foreground">
+                  Coche cette case pour un achat remboursé en plusieurs fois
+                  (crédit, scooter, Dyson, Apple...). Tu verras la progression du
+                  remboursement.
+                </p>
+              </div>
+            </div>
+
+            {newPrelevement.isInstallment && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4 pl-6">
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium">Date de fin</label>
+                  <Input
+                    type="date"
+                    value={newPrelevement.endDate}
+                    onChange={(e) =>
+                      setNewPrelevement({
+                        ...newPrelevement,
+                        endDate: e.target.value,
+                      })
+                    }
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Dernière mensualité prévue.
+                  </p>
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-sm font-medium">Montant total (€)</label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    placeholder="Ex : 3600 pour un scooter"
+                    value={newPrelevement.totalAmount}
+                    onChange={(e) =>
+                      setNewPrelevement({
+                        ...newPrelevement,
+                        totalAmount: e.target.value,
+                      })
+                    }
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Coût total de l&apos;achat, toutes mensualités cumulées.
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button variant="outline" onClick={() => setShowAddForm(false)}>
+              <X className="w-4 h-4 mr-2" />
+              Annuler
+            </Button>
+            <Button onClick={addPrelevement}>
+              <Check className="w-4 h-4 mr-2" />
+              Valider
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Edit Dialog */}
       <Dialog open={!!editingPrelevement} onOpenChange={(open) => !open && cancelEdit()}>
