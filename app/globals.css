@@ -137,15 +137,17 @@
   body {
     @apply bg-background text-foreground;
   }
+}
 
-  /* Empêche le zoom automatique d'iOS Safari au focus d'un input
-     (iOS zoom si font-size < 16px, et ignore user-scalable=no). */
-  @media (max-width: 767px) {
-    input,
-    select,
-    textarea {
-      font-size: 16px;
-    }
+/* Empêche le zoom automatique d'iOS Safari au focus d'un input
+   (iOS zoom si font-size < 16px, et ignore user-scalable=no depuis iOS 10).
+   Hors de @layer base pour ne pas être écrasé par les utilitaires Tailwind
+   (text-sm, text-xs, etc.). */
+@media (max-width: 767px) {
+  input,
+  select,
+  textarea {
+    font-size: 16px;
   }
 }
 
