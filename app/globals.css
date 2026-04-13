@@ -137,6 +137,16 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  /* Empêche le zoom automatique d'iOS Safari au focus d'un input
+     (iOS zoom si font-size < 16px, et ignore user-scalable=no). */
+  @media (max-width: 767px) {
+    input,
+    select,
+    textarea {
+      font-size: 16px;
+    }
+  }
 }
 
 /* Safe area utilities for PWA */
