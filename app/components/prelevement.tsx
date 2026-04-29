@@ -373,7 +373,7 @@ export default function Prelevement() {
   const allCompleted = prelevements.length > 0 && prelevements.every((p) => p.completed);
 
   const getAmountColor = (amount: number) => {
-    return amount >= 0 ? "text-success" : "text-error";
+    return amount >= 0 ? "text-error" : "text-success";
   };
 
   if (!isLoaded) {
