@@ -173,6 +173,135 @@
   }
 }
 
+/* ===== Feedback visuel au cochage d'un prélèvement ===== */
+
+/* Rebond de la case à cocher */
+@keyframes checkbox-pop {
+  0% {
+    transform: scale(1);
+  }
+  35% {
+    transform: scale(1.45);
+  }
+  65% {
+    transform: scale(0.9);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.animate-checkbox-pop {
+  animation: checkbox-pop 420ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Léger rebond de la ligne entière */
+@keyframes row-bounce {
+  0% {
+    transform: scale(1);
+  }
+  35% {
+    transform: scale(1.015);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.animate-row-checked,
+.animate-row-unchecked {
+  animation: row-bounce 450ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Flash de couleur en surimpression (n'écrase pas le fond de la carte) */
+.animate-row-checked::after,
+.animate-row-unchecked::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.animate-row-checked::after {
+  animation: row-flash-success 900ms ease-out forwards;
+}
+
+.animate-row-unchecked::after {
+  animation: row-flash-neutral 900ms ease-out forwards;
+}
+
+@keyframes row-flash-success {
+  0% {
+    background-color: rgba(74, 222, 128, 0.3);
+    box-shadow: inset 0 0 0 2px rgba(74, 222, 128, 0.9);
+  }
+  45% {
+    background-color: rgba(74, 222, 128, 0.18);
+    box-shadow: inset 0 0 0 2px rgba(74, 222, 128, 0.55);
+  }
+  100% {
+    background-color: rgba(74, 222, 128, 0);
+    box-shadow: inset 0 0 0 2px rgba(74, 222, 128, 0);
+  }
+}
+
+@keyframes row-flash-neutral {
+  0% {
+    background-color: rgba(251, 191, 36, 0.22);
+    box-shadow: inset 0 0 0 2px rgba(251, 191, 36, 0.8);
+  }
+  45% {
+    background-color: rgba(251, 191, 36, 0.12);
+    box-shadow: inset 0 0 0 2px rgba(251, 191, 36, 0.45);
+  }
+  100% {
+    background-color: rgba(251, 191, 36, 0);
+    box-shadow: inset 0 0 0 2px rgba(251, 191, 36, 0);
+  }
+}
+
+/* Badge de confirmation "Prélevé" / "Décoché" */
+@keyframes badge-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.6) translateY(8px);
+  }
+  18% {
+    opacity: 1;
+    transform: scale(1.08) translateY(0);
+  }
+  30% {
+    transform: scale(1) translateY(0);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.96) translateY(-8px);
+  }
+}
+
+.animate-badge-pop {
+  animation: badge-pop 900ms ease-out forwards;
+}
+
+/* Accessibilité : on coupe les animations si l'utilisateur les a désactivées */
+@media (prefers-reduced-motion: reduce) {
+  .animate-checkbox-pop,
+  .animate-row-checked,
+  .animate-row-unchecked,
+  .animate-row-checked::after,
+  .animate-row-unchecked::after,
+  .animate-badge-pop {
+    animation-duration: 1ms;
+    animation-iteration-count: 1;
+  }
+}
+
 /* Splash screen styles */
 .splash-screen {
   position: fixed;

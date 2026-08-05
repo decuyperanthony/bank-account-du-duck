@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -29,6 +29,11 @@ type PrelevementType = {
   endDate?: string | null;
   totalAmount?: number | null;
 };
+
+// Durée pendant laquelle un prélèvement reste "en cours d'animation" :
+// la ligne flashe et ne change pas encore de section, le temps que le
+// changement soit bien visible.
+const TOGGLE_FEEDBACK_MS = 900;
 
 const calculateInstallmentProgress = (
   endDate: string | null | undefined,
@@ -85,6 +90,9 @@ export default function Prelevement() {
   const [showResetDialog, setShowResetDialog] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  // id -> état "completed" AVANT le clic, tant que l'animation de feedback tourne
+  const [animatingIds, setAnimatingIds] = useState<Record<number, boolean>>({});
+  const animationTimers = useRef<Record<number, ReturnType<typeof setTimeout>>>({});
 
   const {
     isOnline,
@@ -120,9 +128,57 @@ export default function Prelevement() {
     fetchPrelevements();
   }, [fetchPrelevements]);
 
+  // Nettoyage des timers d'animation au démontage
+  useEffect(() => {
+    const timers = animationTimers.current;
+    return () => {
+      Object.values(timers).forEach(clearTimeout);
+    };
+  }, []);
+
+  // Marque un (ou plusieurs) prélèvement(s) comme "en cours d'animation" :
+  // on mémorise leur état précédent pour retarder leur changement de section.
+  const startToggleFeedback = (
+    items: { id: number; completed: boolean }[],
+    nowCompleted: boolean
+  ) => {
+    if (items.length === 0) return;
+
+    setAnimatingIds((prev) => {
+      const next = { ...prev };
+      items.forEach(({ id, completed }) => {
+        next[id] = completed;
+      });
+      return next;
+    });
+
+    items.forEach(({ id }) => {
+      if (animationTimers.current[id]) {
+        clearTimeout(animationTimers.current[id]);
+      }
+      animationTimers.current[id] = setTimeout(() => {
+        delete animationTimers.current[id];
+        setAnimatingIds((prev) => {
+          const next = { ...prev };
+          delete next[id];
+          return next;
+        });
+      }, TOGGLE_FEEDBACK_MS);
+    });
+
+    // Petit retour haptique sur mobile (PWA)
+    if (typeof navigator !== "undefined" && typeof navigator.vibrate === "function") {
+      navigator.vibrate(nowCompleted ? [12, 40, 18] : 15);
+    }
+  };
+
   const toggleAll = async () => {
     const allCompleted = prelevements.every((p) => p.completed);
     setIsLoading(true);
+    startToggleFeedback(
+      prelevements.map((p) => ({ id: p.id, completed: p.completed })),
+      !allCompleted
+    );
 
     // Optimistic update
     const updatedPrelevements = prelevements.map((p) => ({
@@ -157,6 +213,11 @@ export default function Prelevement() {
   const togglePrelevement = async (id: number) => {
     const prelevement = prelevements.find((p) => p.id === id);
     if (!prelevement) return;
+
+    startToggleFeedback(
+      [{ id, completed: prelevement.completed }],
+      !prelevement.completed
+    );
 
     // Optimistic update
     const updatedPrelevements = prelevements.map((p) =>
@@ -450,18 +511,54 @@ export default function Prelevement() {
             {/* Prélèvements à venir */}
             {(() => {
               const sorted = [...prelevements].sort((a, b) => a.day - b.day);
-              const pending = sorted.filter((p) => !p.completed);
-              const completed = sorted.filter((p) => p.completed);
+              // Tant que l'animation tourne, la ligne reste dans sa section
+              // d'origine : on voit clairement ce qu'on vient de cocher.
+              const sectionCompleted = (p: PrelevementType) =>
+                p.id in animatingIds ? animatingIds[p.id] : p.completed;
+              const pending = sorted.filter((p) => !sectionCompleted(p));
+              const completed = sorted.filter((p) => sectionCompleted(p));
 
-              const renderItem = (prelevement: PrelevementType) => (
+              const renderItem = (prelevement: PrelevementType) => {
+                const isAnimating = prelevement.id in animatingIds;
+                const justChecked = isAnimating && prelevement.completed;
+                const justUnchecked = isAnimating && !prelevement.completed;
+
+                return (
                 <div
                   key={prelevement.id}
-                  className={`border rounded-lg p-4 ${
+                  className={`relative border rounded-lg p-4 transition-colors duration-300 ${
                     prelevement.completed
                       ? "bg-muted/50 text-muted-foreground"
                       : "bg-card"
+                  } ${justChecked ? "animate-row-checked" : ""} ${
+                    justUnchecked ? "animate-row-unchecked" : ""
                   }`}
                 >
+                  {/* Badge de confirmation affiché juste après le clic */}
+                  {isAnimating && (
+                    <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center">
+                      <span
+                        className={`animate-badge-pop flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold shadow-lg ${
+                          justChecked
+                            ? "bg-success text-[#1a1a1a]"
+                            : "bg-warning text-[#1a1a1a]"
+                        }`}
+                      >
+                        {justChecked ? (
+                          <>
+                            <Check className="w-3.5 h-3.5" />
+                            Prélevé
+                          </>
+                        ) : (
+                          <>
+                            <X className="w-3.5 h-3.5" />
+                            Décoché
+                          </>
+                        )}
+                      </span>
+                    </div>
+                  )}
+
                   {/* Mobile Layout */}
                   <div className="lg:hidden space-y-3">
                     <div className="flex items-start justify-between">
@@ -502,6 +599,7 @@ export default function Prelevement() {
                         onCheckedChange={() =>
                           togglePrelevement(prelevement.id)
                         }
+                        className={`size-6 ${isAnimating ? "animate-checkbox-pop" : ""}`}
                       />
                     </div>
 
@@ -581,6 +679,7 @@ export default function Prelevement() {
                         onCheckedChange={() =>
                           togglePrelevement(prelevement.id)
                         }
+                        className={`size-5 ${isAnimating ? "animate-checkbox-pop" : ""}`}
                       />
                     </div>
                     <div className="flex space-x-2">
@@ -628,7 +727,8 @@ export default function Prelevement() {
                     );
                   })()}
                 </div>
-              );
+                );
+              };
 
               return (
                 <>
