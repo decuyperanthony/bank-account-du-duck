@@ -13,7 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Trash2, Edit2, Check, X, Plus, AlertTriangle, Calendar } from "lucide-react";
+import { Trash2, Edit2, Check, X, Plus, AlertTriangle, Calendar, ChevronDown } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { PageLayout } from "@/components/layout/page-layout";
 import { useOfflineSync } from "@/hooks/use-offline-sync";
@@ -90,6 +90,9 @@ export default function Prelevement() {
   const [showResetDialog, setShowResetDialog] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  // Pur état d'affichage (pas de sens à le persister en DB / offline) :
+  // la section "Déjà prélevés" démarre repliée à chaque chargement de page.
+  const [isCompletedExpanded, setIsCompletedExpanded] = useState(false);
   // id -> état "completed" AVANT le clic, tant que l'animation de feedback tourne
   const [animatingIds, setAnimatingIds] = useState<Record<number, boolean>>({});
   const animationTimers = useRef<Record<number, ReturnType<typeof setTimeout>>>({});
@@ -760,18 +763,30 @@ export default function Prelevement() {
                     {pending.map(renderItem)}
                   </div>
 
-                  {/* Liste des prélèvements déjà prélevés */}
+                  {/* Liste des prélèvements déjà prélevés (accordéon replié par défaut) */}
                   {completed.length > 0 && (
                     <>
-                      <div className="flex items-center gap-2 pt-2">
+                      <button
+                        type="button"
+                        onClick={() => setIsCompletedExpanded((prev) => !prev)}
+                        aria-expanded={isCompletedExpanded}
+                        className="flex items-center gap-2 pt-2 w-full text-left"
+                      >
                         <Check className="w-4 h-4 text-muted-foreground" />
                         <span className="text-sm font-medium text-muted-foreground">
                           Déjà prélevés ({completed.length})
                         </span>
-                      </div>
-                      <div className="space-y-3">
-                        {completed.map(renderItem)}
-                      </div>
+                        <ChevronDown
+                          className={`w-4 h-4 text-muted-foreground transition-transform duration-200 ${
+                            isCompletedExpanded ? "rotate-180" : ""
+                          }`}
+                        />
+                      </button>
+                      {isCompletedExpanded && (
+                        <div className="space-y-3 animate-in fade-in-0 slide-in-from-top-2 duration-200">
+                          {completed.map(renderItem)}
+                        </div>
+                      )}
                     </>
                   )}
                 </>
