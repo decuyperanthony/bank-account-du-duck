@@ -12,6 +12,8 @@ type PageLayoutProps = {
   activeTab?: "home" | "stats" | "calendar" | "settings";
   showConnectionStatus?: boolean;
   className?: string;
+  /** Petit texte affiché sous le titre du header, ex: le total à venir */
+  headerSubtitle?: string;
 };
 
 export const PageLayout = ({
@@ -20,10 +22,11 @@ export const PageLayout = ({
   activeTab = "home",
   showConnectionStatus = true,
   className,
+  headerSubtitle,
 }: PageLayoutProps) => {
   return (
     <div className="min-h-screen bg-background">
-      <Header />
+      <Header subtitle={headerSubtitle} />
 
       {showConnectionStatus && <ConnectionStatus />}
 

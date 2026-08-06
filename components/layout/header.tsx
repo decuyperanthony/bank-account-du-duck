@@ -7,7 +7,12 @@ import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 import { ROUTES } from "@/lib/routes";
 
-export const Header = () => {
+type HeaderProps = {
+  /** Petit texte affiché sous le titre, ex: le total à venir */
+  subtitle?: string;
+};
+
+export const Header = ({ subtitle }: HeaderProps = {}) => {
   const router = useRouter();
 
   const handleLogout = async () => {
@@ -62,9 +67,16 @@ export const Header = () => {
               />
             </g>
           </svg>
-          <h1 className="text-lg font-semibold text-foreground">
-            Bank Account du Duck
-          </h1>
+          <div className="min-w-0">
+            <h1 className="text-lg font-semibold text-foreground leading-tight">
+              Bank Account du Duck
+            </h1>
+            {subtitle && (
+              <p className="text-xs text-accent-primary font-medium leading-tight truncate">
+                {subtitle}
+              </p>
+            )}
+          </div>
         </div>
         <Button
           variant="ghost"

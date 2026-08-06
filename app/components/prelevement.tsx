@@ -436,6 +436,11 @@ export default function Prelevement() {
 
   const allCompleted = prelevements.length > 0 && prelevements.every((p) => p.completed);
 
+  const headerSubtitle =
+    prelevements.length > 0
+      ? `${Math.abs(totalAVenir).toFixed(2)} € à venir`
+      : undefined;
+
   const getAmountColor = (amount: number) => {
     return amount >= 0 ? "text-error" : "text-success";
   };
@@ -454,7 +459,7 @@ export default function Prelevement() {
   }
 
   return (
-    <PageLayout onAddClick={() => setShowAddForm(true)}>
+    <PageLayout onAddClick={() => setShowAddForm(true)} headerSubtitle={headerSubtitle}>
       <div className="max-w-4xl mx-auto py-4">
         <Card>
           <CardHeader className="space-y-4">
