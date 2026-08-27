@@ -10,6 +10,11 @@ import { Input } from "@/components/ui/input";
 import { ArrowLeft, CheckCircle } from "lucide-react";
 import { ROUTES } from "@/lib/routes";
 
+const INVALID_LINK_MESSAGE =
+  "Le lien de réinitialisation est invalide ou a expiré.";
+const UNAVAILABLE_MESSAGE =
+  "Le service d'authentification est injoignable. Réessayez dans quelques minutes.";
+
 const ResetPasswordPage = () => {
   const router = useRouter();
   const [password, setPassword] = useState("");
@@ -23,38 +28,101 @@ const ResetPasswordPage = () => {
     const checkSession = async () => {
       const supabase = createClient();
 
-      // Handle the hash fragment from Supabase recovery email
-      const hashParams = new URLSearchParams(
-        window.location.hash.substring(1)
-      );
-      const accessToken = hashParams.get("access_token");
-      const type = hashParams.get("type");
+      // Supabase renvoie les paramètres soit en query string (flux PKCE et
+      // token_hash), soit dans le fragment `#` (ancien flux implicite).
+      const queryParams = new URLSearchParams(window.location.search);
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
 
-      if (accessToken && type === "recovery") {
-        // Set the session from the recovery token
-        const { error } = await supabase.auth.setSession({
-          access_token: accessToken,
-          refresh_token: hashParams.get("refresh_token") ?? "",
-        });
-
-        if (error) {
-          setError("Le lien de réinitialisation est invalide ou a expiré.");
-          setIsValidSession(false);
-          return;
-        }
-
-        // Clear the hash from URL
+      const clearUrl = () => {
         window.history.replaceState(null, "", window.location.pathname);
-        setIsValidSession(true);
+      };
+
+      const fail = (message: string) => {
+        setError(message);
+        setIsValidSession(false);
+      };
+
+      // 1. Supabase a refusé le lien (expiré, déjà utilisé...)
+      const errorDescription =
+        queryParams.get("error_description") ??
+        hashParams.get("error_description") ??
+        queryParams.get("error") ??
+        hashParams.get("error");
+
+      if (errorDescription) {
+        clearUrl();
+        fail(errorDescription);
         return;
       }
 
-      // Check if user already has a valid session
-      const { data: { user } } = await supabase.auth.getUser();
-      setIsValidSession(!!user);
+      try {
+        // 2. Ancien flux implicite : tokens dans le fragment
+        const accessToken = hashParams.get("access_token");
+        if (accessToken && hashParams.get("type") === "recovery") {
+          const { error: sessionError } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: hashParams.get("refresh_token") ?? "",
+          });
 
-      if (!user) {
-        setError("Aucune session valide. Demandez un nouveau lien de réinitialisation.");
+          if (sessionError) {
+            fail(INVALID_LINK_MESSAGE);
+            return;
+          }
+
+          clearUrl();
+          setIsValidSession(true);
+          return;
+        }
+
+        // 3. Flux PKCE : `?code=...` à échanger contre une session
+        const code = queryParams.get("code");
+        if (code) {
+          const { error: exchangeError } =
+            await supabase.auth.exchangeCodeForSession(code);
+
+          if (exchangeError) {
+            fail(INVALID_LINK_MESSAGE);
+            return;
+          }
+
+          clearUrl();
+          setIsValidSession(true);
+          return;
+        }
+
+        // 4. Template email `{{ .TokenHash }}` : `?token_hash=...&type=recovery`
+        const tokenHash = queryParams.get("token_hash");
+        if (tokenHash) {
+          const { error: otpError } = await supabase.auth.verifyOtp({
+            type: "recovery",
+            token_hash: tokenHash,
+          });
+
+          if (otpError) {
+            fail(INVALID_LINK_MESSAGE);
+            return;
+          }
+
+          clearUrl();
+          setIsValidSession(true);
+          return;
+        }
+
+        // 5. Sinon : l'utilisateur a-t-il déjà une session valide ?
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+
+        setIsValidSession(!!user);
+
+        if (!user) {
+          fail(
+            "Aucune session valide. Demandez un nouveau lien de réinitialisation."
+          );
+        }
+      } catch (caught) {
+        console.error("Reset password session check failed:", caught);
+        fail(UNAVAILABLE_MESSAGE);
       }
     };
 
@@ -77,13 +145,20 @@ const ResetPasswordPage = () => {
 
     setIsLoading(true);
 
-    const supabase = createClient();
-    const { error: updateError } = await supabase.auth.updateUser({
-      password,
-    });
+    try {
+      const supabase = createClient();
+      const { error: updateError } = await supabase.auth.updateUser({
+        password,
+      });
 
-    if (updateError) {
-      setError(updateError.message);
+      if (updateError) {
+        setError(updateError.message);
+        setIsLoading(false);
+        return;
+      }
+    } catch (caught) {
+      console.error("Password update failed:", caught);
+      setError(UNAVAILABLE_MESSAGE);
       setIsLoading(false);
       return;
     }

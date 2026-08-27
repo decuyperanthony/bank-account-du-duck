@@ -9,6 +9,9 @@ import { Input } from "@/components/ui/input";
 import { ArrowLeft } from "lucide-react";
 import { ROUTES } from "@/lib/routes";
 
+const UNAVAILABLE_MESSAGE =
+  "Le service d'authentification est injoignable. Réessayez dans quelques minutes.";
+
 const ForgotPasswordPage = () => {
   const [email, setEmail] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -20,16 +23,23 @@ const ForgotPasswordPage = () => {
     setError(null);
     setIsLoading(true);
 
-    const supabase = createClient();
-    const { error: resetError } = await supabase.auth.resetPasswordForEmail(
-      email,
-      {
-        redirectTo: `${window.location.origin}${ROUTES.RESET_PASSWORD}`,
-      }
-    );
+    try {
+      const supabase = createClient();
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(
+        email,
+        {
+          redirectTo: `${window.location.origin}${ROUTES.AUTH_CONFIRM}`,
+        }
+      );
 
-    if (resetError) {
-      setError(resetError.message);
+      if (resetError) {
+        setError(resetError.message);
+        setIsLoading(false);
+        return;
+      }
+    } catch (caught) {
+      console.error("Password reset request failed:", caught);
+      setError(UNAVAILABLE_MESSAGE);
       setIsLoading(false);
       return;
     }

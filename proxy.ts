@@ -28,15 +28,32 @@ const updateSession = async (request: NextRequest) => {
     }
   );
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
   const pathname = request.nextUrl.pathname;
   const isAuthPage =
     pathname === ROUTES.LOGIN ||
     pathname === ROUTES.FORGOT_PASSWORD ||
-    pathname === ROUTES.RESET_PASSWORD;
+    pathname === ROUTES.RESET_PASSWORD ||
+    pathname === ROUTES.AUTH_CONFIRM;
+
+  let user = null;
+
+  try {
+    const { data } = await supabase.auth.getUser();
+    user = data.user;
+  } catch (error) {
+    // Supabase injoignable (DNS, projet en pause, panne réseau...).
+    // Sans ce catch, l'exception remonte et TOUTES les pages renvoient un 500.
+    console.error("Supabase unreachable in proxy:", error);
+
+    if (isAuthPage) {
+      return supabaseResponse;
+    }
+
+    const url = request.nextUrl.clone();
+    url.pathname = ROUTES.LOGIN;
+    url.searchParams.set("error", "auth_unavailable");
+    return NextResponse.redirect(url);
+  }
 
   // Redirect unauthenticated users to login page
   if (!user && !isAuthPage) {

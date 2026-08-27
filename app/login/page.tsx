@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useState, useEffect, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Eye, EyeOff } from "lucide-react";
@@ -10,6 +10,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ROUTES } from "@/lib/routes";
 
+const UNAVAILABLE_MESSAGE =
+  "Le service d'authentification est injoignable. Réessayez dans quelques minutes.";
+
 const LoginPage = () => {
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -18,19 +21,36 @@ const LoginPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
+  // Le proxy redirige ici avec ?error=auth_unavailable quand Supabase est
+  // injoignable (projet supprimé/en pause, mauvaise URL, panne réseau).
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("error") === "auth_unavailable") {
+      setError(UNAVAILABLE_MESSAGE);
+      window.history.replaceState(null, "", window.location.pathname);
+    }
+  }, []);
+
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
     setIsLoading(true);
 
-    const supabase = createClient();
-    const { error: signInError } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    try {
+      const supabase = createClient();
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-    if (signInError) {
-      setError(signInError.message);
+      if (signInError) {
+        setError(signInError.message);
+        setIsLoading(false);
+        return;
+      }
+    } catch (caught) {
+      console.error("Sign in failed:", caught);
+      setError(UNAVAILABLE_MESSAGE);
       setIsLoading(false);
       return;
     }
