@@ -1,8 +1,7 @@
 import { z } from "zod";
 
 const envSchema = z.object({
-  NEXT_PUBLIC_SUPABASE_URL: z.string().url(),
-  NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().min(1),
+  APP_PIN: z.string().min(1),
 });
 
 export type Env = z.infer<typeof envSchema>;
@@ -13,13 +12,12 @@ export type Env = z.infer<typeof envSchema>;
  */
 export const getEnv = (): Env | undefined => {
   const result = envSchema.safeParse({
-    NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
-    NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    APP_PIN: process.env.APP_PIN,
   });
 
   if (!result.success) {
     if (process.env.NODE_ENV === "development") {
-      console.warn("Missing Supabase environment variables:", result.error.format());
+      console.warn("Missing auth environment variables:", result.error.format());
     }
     return undefined;
   }
@@ -33,9 +31,7 @@ export const getEnv = (): Env | undefined => {
 export const requireEnv = (): Env => {
   const env = getEnv();
   if (!env) {
-    throw new Error(
-      "Missing required environment variables: NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY"
-    );
+    throw new Error("Missing required environment variable: APP_PIN");
   }
   return env;
 };

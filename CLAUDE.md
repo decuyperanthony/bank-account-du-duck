@@ -7,7 +7,7 @@ Application de gestion des prélèvements bancaires récurrents (abonnements, lo
 - **Framework**: Next.js 16 (App Router) + React 19
 - **Database**: PostgreSQL via Neon (serverless)
 - **ORM**: Drizzle ORM
-- **Auth**: Supabase Auth (email/password)
+- **Auth**: Authentification maison par code PIN partagé (cookie de session signé, voir `lib/auth.ts`)
 - **Styling**: Tailwind CSS 4 + Radix UI
 - **PWA**: Offline-first avec IndexedDB
 
@@ -50,7 +50,7 @@ npx drizzle-kit push
 /lib
   routes.ts           # Constantes des routes
   offline-db.ts       # IndexedDB pour mode offline
-  supabase/           # Clients Supabase
+  auth.ts             # Vérification du PIN + cookie de session signé
 /hooks
   useOfflineSync.ts   # Hook de synchronisation offline
 ```

@@ -1,35 +1,19 @@
 "use client";
 
-import { useState, useEffect, type FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { Eye, EyeOff } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ROUTES } from "@/lib/routes";
 
-const UNAVAILABLE_MESSAGE =
-  "Le service d'authentification est injoignable. Réessayez dans quelques minutes.";
+const GENERIC_ERROR_MESSAGE = "Une erreur est survenue. Réessayez.";
 
 const LoginPage = () => {
   const router = useRouter();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
+  const [pin, setPin] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-
-  // Le proxy redirige ici avec ?error=auth_unavailable quand Supabase est
-  // injoignable (projet supprimé/en pause, mauvaise URL, panne réseau).
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get("error") === "auth_unavailable") {
-      setError(UNAVAILABLE_MESSAGE);
-      window.history.replaceState(null, "", window.location.pathname);
-    }
-  }, []);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -37,20 +21,21 @@ const LoginPage = () => {
     setIsLoading(true);
 
     try {
-      const supabase = createClient();
-      const { error: signInError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pin }),
       });
 
-      if (signInError) {
-        setError(signInError.message);
+      if (!response.ok) {
+        const data = await response.json().catch(() => null);
+        setError(data?.error ?? GENERIC_ERROR_MESSAGE);
         setIsLoading(false);
         return;
       }
     } catch (caught) {
       console.error("Sign in failed:", caught);
-      setError(UNAVAILABLE_MESSAGE);
+      setError(GENERIC_ERROR_MESSAGE);
       setIsLoading(false);
       return;
     }
@@ -109,62 +94,23 @@ const LoginPage = () => {
               </div>
             )}
             <div className="flex flex-col gap-2">
-              <label htmlFor="email" className="text-sm font-medium">
-                Email
+              <label htmlFor="pin" className="text-sm font-medium">
+                Code PIN
               </label>
               <Input
-                id="email"
-                type="email"
-                placeholder="email@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                id="pin"
+                type="password"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                autoComplete="current-password"
+                placeholder="••••"
+                value={pin}
+                onChange={(e) => setPin(e.target.value)}
                 required
                 disabled={isLoading}
-                autoComplete="email"
+                autoFocus
+                className="text-center tracking-[0.5em] text-lg"
               />
-            </div>
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center justify-between">
-                <label htmlFor="password" className="text-sm font-medium">
-                  Password
-                </label>
-                <Link
-                  href={ROUTES.FORGOT_PASSWORD}
-                  className="text-sm text-primary hover:underline"
-                >
-                  Mot de passe oublié ?
-                </Link>
-              </div>
-              <div className="relative">
-                <Input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  placeholder="********"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  disabled={isLoading}
-                  autoComplete="current-password"
-                  className="pr-10"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword((v) => !v)}
-                  disabled={isLoading}
-                  aria-label={
-                    showPassword
-                      ? "Masquer le mot de passe"
-                      : "Afficher le mot de passe"
-                  }
-                  className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {showPassword ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
-                </button>
-              </div>
             </div>
             <Button type="submit" disabled={isLoading} className="mt-2">
               {isLoading ? "Connexion..." : "Se connecter"}
