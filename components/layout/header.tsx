@@ -4,7 +4,6 @@ import { useRouter } from "next/navigation";
 import { LogOut } from "lucide-react";
 import { GlassBar } from "@/components/ui/glass-bar";
 import { Button } from "@/components/ui/button";
-import { createClient } from "@/lib/supabase/client";
 import { ROUTES } from "@/lib/routes";
 
 type HeaderProps = {
@@ -16,8 +15,7 @@ export const Header = ({ subtitle }: HeaderProps = {}) => {
   const router = useRouter();
 
   const handleLogout = async () => {
-    const supabase = createClient();
-    await supabase.auth.signOut();
+    await fetch("/api/auth/logout", { method: "POST" });
     router.push(ROUTES.LOGIN);
     router.refresh();
   };

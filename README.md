@@ -73,9 +73,9 @@ Most banking apps show transaction history, but none give a **clear, interactive
 - Automatic sync when back online
 
 ### Authentication
-- Secure login via Supabase Auth (email/password)
+- Homemade PIN-code login (single shared PIN, no user accounts)
+- Signed, httpOnly session cookie
 - Route protection middleware
-- Password reset
 
 ---
 
@@ -88,7 +88,7 @@ Most banking apps show transaction history, but none give a **clear, interactive
 | **Styling** | Tailwind CSS 4 + Radix UI |
 | **Database** | PostgreSQL via Neon (serverless) |
 | **ORM** | Drizzle ORM |
-| **Auth** | Supabase Auth |
+| **Auth** | Homemade PIN + signed cookie |
 | **Validation** | Zod |
 | **PWA** | next-pwa + IndexedDB |
 | **Icons** | Lucide React |
@@ -120,7 +120,7 @@ lib/
   categories.ts         # Categories and colors
   routes.ts             # Route constants
   offline-db.ts         # IndexedDB for offline mode
-  supabase/             # Supabase clients (client + server)
+  auth.ts               # PIN check + signed session cookie
 
 hooks/
   useOfflineSync.ts     # Offline sync hook
@@ -155,7 +155,6 @@ hooks/
 
 - Node.js 18+
 - A [Neon](https://neon.tech) account (serverless PostgreSQL)
-- A [Supabase](https://supabase.com) project (authentication)
 
 ### Setup
 
@@ -169,7 +168,7 @@ npm install
 
 # Configure environment variables
 cp .env.example .env.local
-# Fill in DATABASE_URL, NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY
+# Fill in DATABASE_URL and APP_PIN
 
 # Push schema to database
 npx drizzle-kit push
