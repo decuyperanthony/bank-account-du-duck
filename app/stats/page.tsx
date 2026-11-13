@@ -24,7 +24,6 @@ import {
   PieChart,
   Plus,
   Check,
-  ShoppingCart,
   Banknote,
   ChevronDown,
   ChevronUp,
@@ -62,10 +61,6 @@ export default function StatsPage() {
   const [salaryAmount, setSalaryAmount] = useState("");
   const [salaryDay, setSalaryDay] = useState("1");
 
-  const [showCoursesInput, setShowCoursesInput] = useState(false);
-  const [coursesTitle, setCoursesTitle] = useState("Courses");
-  const [coursesAmount, setCoursesAmount] = useState("");
-  const [coursesDay, setCoursesDay] = useState("1");
 
   const fetchData = useCallback(async () => {
     try {
@@ -115,17 +110,6 @@ export default function StatsPage() {
     setShowSalaryInput(false);
   };
 
-  const handleAddCourses = async () => {
-    const amount = Number.parseFloat(coursesAmount);
-    const day = Number.parseInt(coursesDay);
-    if (!coursesTitle.trim() || isNaN(amount) || amount <= 0 || isNaN(day)) return;
-
-    await addQuickPrelevement(coursesTitle.trim(), amount, day, "courses");
-    setCoursesAmount("");
-    setCoursesTitle("Courses");
-    setCoursesDay("1");
-    setShowCoursesInput(false);
-  };
 
   const stats = useMemo(() => {
     // Les crédits terminés (ou pas encore commencés) ne comptent pas ce mois-ci
@@ -233,8 +217,8 @@ export default function StatsPage() {
           </div>
         </div>
 
-        {/* Quick Actions: Salary & Courses */}
-        <div className="grid grid-cols-2 gap-3">
+        {/* Quick Action: Salaire (les courses viennent désormais de l'import du relevé) */}
+        <div className="grid grid-cols-1 gap-3">
           {/* Salary Quick Add */}
           <div className={cn("bg-card rounded-xl border border-border overflow-hidden")}>
             <button
@@ -294,68 +278,6 @@ export default function StatsPage() {
             )}
           </div>
 
-          {/* Courses Quick Add */}
-          <div className={cn("bg-card rounded-xl border border-border overflow-hidden")}>
-            <button
-              type="button"
-              onClick={() => setShowCoursesInput(!showCoursesInput)}
-              className="w-full p-4 flex items-center gap-3 hover:bg-bg-tertiary/50 transition-colors"
-            >
-              <div className="flex items-center justify-center size-10 rounded-full" style={{ backgroundColor: `${CATEGORY_COLORS.courses}20` }}>
-                <ShoppingCart className="size-5" style={{ color: CATEGORY_COLORS.courses }} />
-              </div>
-              <div className="flex-1 text-left">
-                <p className="font-medium text-sm">Courses</p>
-                {(() => {
-                  const coursesItems = prelevements.filter(p => p.category === "courses");
-                  const coursesTotal = coursesItems.reduce((sum, p) => sum + p.amount, 0);
-                  return coursesItems.length > 0 ? (
-                    <p className="text-xs font-medium" style={{ color: CATEGORY_COLORS.courses }}>
-                      {coursesTotal.toFixed(0)} €
-                    </p>
-                  ) : (
-                    <p className="text-xs text-muted-foreground">Ajouter</p>
-                  );
-                })()}
-              </div>
-              {showCoursesInput ? (
-                <ChevronUp className="size-4 text-muted-foreground" />
-              ) : (
-                <Plus className="size-4 text-muted-foreground" />
-              )}
-            </button>
-            {showCoursesInput && (
-              <div className="border-t border-border p-3 space-y-2">
-                <Input
-                  placeholder="Titre (ex: Courses Leclerc)"
-                  value={coursesTitle}
-                  onChange={(e) => setCoursesTitle(e.target.value)}
-                  className="h-8 text-sm"
-                />
-                <Input
-                  type="number"
-                  step="0.01"
-                  placeholder="Budget mensuel"
-                  value={coursesAmount}
-                  onChange={(e) => setCoursesAmount(e.target.value)}
-                  className="h-8 text-sm"
-                />
-                <Input
-                  type="number"
-                  min="1"
-                  max="31"
-                  placeholder="Jour"
-                  value={coursesDay}
-                  onChange={(e) => setCoursesDay(e.target.value)}
-                  className="h-8 text-sm"
-                />
-                <Button onClick={handleAddCourses} size="sm" className="w-full h-8 text-sm">
-                  <Check className="size-3 mr-1" />
-                  Ajouter
-                </Button>
-              </div>
-            )}
-          </div>
         </div>
 
         {/* Summary Cards */}

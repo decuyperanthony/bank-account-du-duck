@@ -1,10 +1,8 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { LogOut, Settings } from "lucide-react";
+import { Settings } from "lucide-react";
 import { GlassBar } from "@/components/ui/glass-bar";
-import { Button } from "@/components/ui/button";
 import { ROUTES } from "@/lib/routes";
 
 type HeaderProps = {
@@ -13,14 +11,6 @@ type HeaderProps = {
 };
 
 export const Header = ({ subtitle }: HeaderProps = {}) => {
-  const router = useRouter();
-
-  const handleLogout = async () => {
-    await fetch("/api/auth/logout", { method: "POST" });
-    router.push(ROUTES.LOGIN);
-    router.refresh();
-  };
-
   return (
     <GlassBar position="top" as="header">
       <div className="flex items-center justify-between gap-3 px-4 py-3">
@@ -52,14 +42,6 @@ export const Header = ({ subtitle }: HeaderProps = {}) => {
         >
           <Settings className="size-5" />
         </Link>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={handleLogout}
-          aria-label="Se déconnecter"
-        >
-          <LogOut className="size-5" />
-        </Button>
         </div>
       </div>
     </GlassBar>

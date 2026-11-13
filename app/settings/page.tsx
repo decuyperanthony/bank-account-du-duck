@@ -1,20 +1,94 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
-import { PageLayout } from "@/components/layout/page-layout";
-import { Database, Palette, Download, Info, Sun, Moon, Monitor, ChevronRight } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
+import {
+  ChevronRight,
+  Database,
+  Download,
+  FileUp,
+  ListFilter,
+  LogOut,
+  Monitor,
+  Moon,
+  Sun,
+} from "lucide-react";
+import { PageLayout } from "@/components/layout/page-layout";
+import { ImportRules } from "@/components/settings/import-rules";
+import { ROUTES } from "@/lib/routes";
 import { cn } from "@/lib/utils";
 
 type DbStatus = "checking" | "connected" | "disconnected";
 
+const THEMES = [
+  { value: "system", label: "Système", icon: Monitor },
+  { value: "light", label: "Clair", icon: Sun },
+  { value: "dark", label: "Sombre", icon: Moon },
+] as const;
+
+const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
+  <section>
+    <h2 className="mb-2 px-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">{title}</h2>
+    <div className="divide-y divide-border overflow-hidden rounded-3xl border border-border bg-card">{children}</div>
+  </section>
+);
+
+const Row = ({
+  icon,
+  iconClass,
+  title,
+  subtitle,
+  right,
+  onClick,
+  href,
+  danger,
+}: {
+  icon: React.ReactNode;
+  iconClass: string;
+  title: string;
+  subtitle?: string;
+  right?: React.ReactNode;
+  onClick?: () => void;
+  href?: string;
+  danger?: boolean;
+}) => {
+  const content = (
+    <>
+      <span className={cn("flex size-9 shrink-0 items-center justify-center rounded-xl", iconClass)}>{icon}</span>
+      <span className="min-w-0 flex-1 text-left">
+        <span className={cn("block font-medium", danger && "text-error")}>{title}</span>
+        {subtitle && <span className="block truncate text-xs text-muted-foreground">{subtitle}</span>}
+      </span>
+      {right ?? ((href || onClick) && <ChevronRight className="size-4 text-muted-foreground" />)}
+    </>
+  );
+  const className = "flex w-full items-center gap-3 px-4 py-3 transition-colors hover:bg-bg-tertiary/50";
+  if (href) {
+    return (
+      <Link href={href} className={className}>
+        {content}
+      </Link>
+    );
+  }
+  if (onClick) {
+    return (
+      <button type="button" onClick={onClick} className={className}>
+        {content}
+      </button>
+    );
+  }
+  return <div className={className}>{content}</div>;
+};
+
 export default function SettingsPage() {
-  const [dbStatus, setDbStatus] = useState<DbStatus>("checking");
+  const router = useRouter();
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const [dbStatus, setDbStatus] = useState<DbStatus>("checking");
   const [isExporting, setIsExporting] = useState(false);
 
-  // Check database status
   const checkDbStatus = useCallback(async () => {
     setDbStatus("checking");
     try {
@@ -31,21 +105,16 @@ export default function SettingsPage() {
     setMounted(true);
   }, [checkDbStatus]);
 
-  // Export data
   const handleExport = async () => {
     setIsExporting(true);
     try {
       const response = await fetch("/api/export");
       const data = await response.json();
-
-      // Create and download JSON file
-      const blob = new Blob([JSON.stringify(data, null, 2)], {
-        type: "application/json",
-      });
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `bank-account-du-duck-export-${new Date().toISOString().split("T")[0]}.json`;
+      a.download = `duck-bank-export-${new Date().toISOString().split("T")[0]}.json`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -57,213 +126,112 @@ export default function SettingsPage() {
     }
   };
 
+  const handleLogout = async () => {
+    await fetch("/api/auth/logout", { method: "POST" });
+    router.push(ROUTES.LOGIN);
+    router.refresh();
+  };
+
+  const dbBadge = {
+    checking: { text: "Vérification…", dot: "bg-warning animate-pulse" },
+    connected: { text: "Connectée", dot: "bg-success" },
+    disconnected: { text: "Hors ligne", dot: "bg-error" },
+  }[dbStatus];
+
   return (
     <PageLayout activeTab="settings">
-      <div className="max-w-lg mx-auto py-6">
-        {/* Page Title */}
-        <h1 className="text-2xl font-bold mb-6">Réglages</h1>
+      <div className="mx-auto max-w-lg space-y-6 py-6">
+        <h1 className="text-2xl font-bold">Réglages</h1>
 
-        {/* Settings List */}
-        <div className="flex flex-col gap-4">
-          {/* Database Status */}
-          <SettingsCard
-            icon={<Database className="size-5" />}
-            iconBg="bg-teal-500/20"
-            iconColor="text-teal-400"
-            title="Base de données"
-            subtitle="Neon PostgreSQL"
-            action={
-              <StatusBadge
-                status={dbStatus}
-                onClick={checkDbStatus}
-              />
-            }
-          />
-
-          {/* Thème */}
-          <div className="bg-card rounded-xl border border-border p-4 space-y-3">
-            <div className="flex items-center gap-3">
-              <div className="flex items-center justify-center size-10 rounded-full bg-violet-500/20 text-violet-400">
-                <Palette className="size-5" />
-              </div>
-              <div>
-                <p className="font-medium">Thème</p>
-                <p className="text-sm text-muted-foreground">Apparence de l&apos;app</p>
-              </div>
-            </div>
-            <div className="grid grid-cols-3 gap-1 rounded-xl bg-bg-tertiary p-1">
-              {([
-                { value: "system", label: "Système", icon: <Monitor className="size-4" /> },
-                { value: "light", label: "Clair", icon: <Sun className="size-4" /> },
-                { value: "dark", label: "Sombre", icon: <Moon className="size-4" /> },
-              ] as const).map((opt) => (
+        <Section title="Apparence">
+          <div className="p-3">
+            <div className="grid grid-cols-3 gap-1 rounded-2xl bg-bg-tertiary p-1">
+              {THEMES.map(({ value, label, icon: Icon }) => (
                 <button
-                  key={opt.value}
+                  key={value}
                   type="button"
-                  onClick={() => setTheme(opt.value)}
+                  onClick={() => setTheme(value)}
+                  aria-pressed={mounted && theme === value}
                   className={cn(
-                    "flex items-center justify-center gap-1.5 rounded-lg py-2 text-sm font-medium transition-colors",
-                    mounted && theme === opt.value
+                    "flex flex-col items-center gap-1 rounded-xl py-2.5 text-xs font-medium transition-colors",
+                    mounted && theme === value
                       ? "bg-card text-foreground shadow-sm"
                       : "text-muted-foreground hover:text-foreground"
                   )}
                 >
-                  {opt.icon}
-                  {opt.label}
+                  <Icon className="size-5" />
+                  {label}
                 </button>
               ))}
             </div>
           </div>
+        </Section>
 
-          {/* Export Data */}
-          <SettingsCard
-            icon={<Download className="size-5" />}
-            iconBg="bg-accent-muted"
-            iconColor="text-accent-primary"
-            title="Exporter les données"
-            subtitle="Télécharger tes abonnements"
-            action={
-              <button
-                type="button"
-                onClick={handleExport}
-                disabled={isExporting}
-                className={cn(
-                  "flex items-center justify-center",
-                  "size-10 rounded-full",
-                  "bg-bg-tertiary hover:bg-border-default",
-                  "transition-colors",
-                  "disabled:opacity-50 disabled:cursor-not-allowed"
-                )}
-              >
-                {isExporting ? (
-                  <div className="size-5 border-2 border-accent-primary border-t-transparent rounded-full animate-spin" />
-                ) : (
-                  <ChevronRight className="size-5 text-muted-foreground" />
-                )}
-              </button>
-            }
+        <Section title="Relevé bancaire">
+          <Row
+            href={ROUTES.IMPORT}
+            icon={<FileUp className="size-5" />}
+            iconClass="bg-accent-muted text-accent-primary"
+            title="Importer un relevé LCL"
+            subtitle="Vérifier les montants, suivre les écarts"
           />
+          <div className="px-4 py-4">
+            <div className="mb-3 flex items-center gap-3">
+              <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-violet-500/15 text-violet-400">
+                <ListFilter className="size-5" />
+              </span>
+              <span>
+                <span className="block font-medium">Règles d&apos;import</span>
+                <span className="block text-xs text-muted-foreground">
+                  Si le libellé contient… → ignorer, surveiller ou dépense variable
+                </span>
+              </span>
+            </div>
+            <ImportRules />
+          </div>
+        </Section>
 
-          {/* About */}
-          <SettingsCard
-            icon={<Info className="size-5" />}
-            iconBg="bg-gray-500/20"
-            iconColor="text-gray-400"
-            title="À propos"
-            subtitle="Bank Account du Duck V2 (2.0.0)"
-            action={
-              <span className="text-xs text-muted-foreground">
-                Made with 🦆
+        <Section title="Données">
+          <Row
+            onClick={handleExport}
+            icon={<Download className="size-5" />}
+            iconClass="bg-info/15 text-info"
+            title={isExporting ? "Export en cours…" : "Exporter mes données"}
+            subtitle="Prélèvements, historique, règles et relevés (JSON)"
+          />
+          <Row
+            onClick={checkDbStatus}
+            icon={<Database className="size-5" />}
+            iconClass="bg-teal-500/15 text-teal-400"
+            title="Base de données"
+            subtitle="Neon PostgreSQL"
+            right={
+              <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <span className={cn("size-2 rounded-full", dbBadge.dot)} />
+                {dbBadge.text}
               </span>
             }
           />
+        </Section>
+
+        <Section title="Compte">
+          <Row
+            onClick={handleLogout}
+            icon={<LogOut className="size-5" />}
+            iconClass="bg-error/15 text-error"
+            title="Se déconnecter"
+            danger
+            right={<span />}
+          />
+        </Section>
+
+        <div className="flex flex-col items-center gap-2 pt-2 text-center">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/icons/icon-192x192.png?v=2" alt="" width={56} height={56} className="size-14 rounded-2xl" />
+          <p className="text-sm font-semibold">Duck Bank V2</p>
+          <p className="text-xs text-muted-foreground">Version 2.0.0 · Made with 🦆</p>
         </div>
       </div>
     </PageLayout>
-  );
-}
-
-// Settings Card Component
-type SettingsCardProps = {
-  icon: React.ReactNode;
-  iconBg: string;
-  iconColor: string;
-  title: string;
-  subtitle: string;
-  action?: React.ReactNode;
-};
-
-function SettingsCard({
-  icon,
-  iconBg,
-  iconColor,
-  title,
-  subtitle,
-  action,
-}: SettingsCardProps) {
-  return (
-    <div
-      className={cn(
-        "flex items-center gap-4 p-4",
-        "bg-card rounded-xl",
-        "border border-border"
-      )}
-    >
-      {/* Icon */}
-      <div
-        className={cn(
-          "flex items-center justify-center",
-          "size-12 rounded-full",
-          iconBg,
-          iconColor
-        )}
-      >
-        {icon}
-      </div>
-
-      {/* Content */}
-      <div className="flex-1 min-w-0">
-        <h3 className="font-medium text-foreground">{title}</h3>
-        <p className="text-sm text-muted-foreground truncate">{subtitle}</p>
-      </div>
-
-      {/* Action */}
-      {action && <div className="flex-shrink-0">{action}</div>}
-    </div>
-  );
-}
-
-// Status Badge Component
-type StatusBadgeProps = {
-  status: DbStatus;
-  onClick?: () => void;
-};
-
-function StatusBadge({ status, onClick }: StatusBadgeProps) {
-  const getStatusConfig = () => {
-    switch (status) {
-      case "checking":
-        return {
-          text: "Vérification...",
-          dotColor: "bg-yellow-400",
-          animate: true,
-        };
-      case "connected":
-        return {
-          text: "Connecté",
-          dotColor: "bg-success",
-          animate: false,
-        };
-      case "disconnected":
-        return {
-          text: "Déconnecté",
-          dotColor: "bg-error",
-          animate: false,
-        };
-    }
-  };
-
-  const config = getStatusConfig();
-
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={cn(
-        "flex items-center gap-2 px-3 py-1.5",
-        "bg-bg-tertiary rounded-full",
-        "text-xs font-medium",
-        "hover:bg-border-default transition-colors"
-      )}
-    >
-      <span
-        className={cn(
-          "size-2 rounded-full",
-          config.dotColor,
-          config.animate && "animate-pulse"
-        )}
-      />
-      <span className="text-muted-foreground">{config.text}</span>
-    </button>
   );
 }
