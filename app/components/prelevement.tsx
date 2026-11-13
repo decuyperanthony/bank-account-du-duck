@@ -17,6 +17,13 @@ import { Trash2, Edit2, Check, X, Plus, AlertTriangle, Calendar, ChevronDown } f
 import { Progress } from "@/components/ui/progress";
 import { PageLayout } from "@/components/layout/page-layout";
 import { useOfflineSync } from "@/hooks/use-offline-sync";
+import { getInstallmentInfo, isInstallment, formatMonth } from "@/lib/credits";
+import {
+  InstallmentFields,
+  emptyInstallment,
+  installmentFromPrelevement,
+  installmentToPayload,
+} from "@/components/installment-fields";
 import { CATEGORIES, CATEGORY_LABELS, CATEGORY_COLORS, type Category } from "@/lib/categories";
 
 type PrelevementType = {
@@ -35,36 +42,6 @@ type PrelevementType = {
 // changement soit bien visible.
 const TOGGLE_FEEDBACK_MS = 900;
 
-const calculateInstallmentProgress = (
-  endDate: string | null | undefined,
-  totalAmount: number | null | undefined,
-  monthlyAmount: number
-): { progress: number; remainingMonths: number; paidAmount: number } | null => {
-  if (!endDate || !totalAmount || monthlyAmount === 0) return null;
-
-  const absMonthly = Math.abs(monthlyAmount);
-  const absTotal = Math.abs(totalAmount);
-
-  const end = new Date(endDate);
-  const now = new Date();
-
-  // Calculate total months of the installment plan
-  const totalMonths = Math.max(1, Math.round(absTotal / absMonthly));
-
-  // Calculate remaining months from now to end date
-  const remainingMonths = Math.max(
-    0,
-    (end.getFullYear() - now.getFullYear()) * 12 + (end.getMonth() - now.getMonth())
-  );
-
-  // Calculate paid months
-  const paidMonths = Math.max(0, totalMonths - remainingMonths);
-  const paidAmount = paidMonths * absMonthly;
-  const progress = Math.min(100, Math.round((paidMonths / totalMonths) * 100));
-
-  return { progress, remainingMonths, paidAmount };
-};
-
 export default function Prelevement() {
   const [prelevements, setPrelevements] = useState<PrelevementType[]>([]);
   const [editingPrelevement, setEditingPrelevement] = useState<PrelevementType | null>(null);
@@ -74,8 +51,7 @@ export default function Prelevement() {
     amount: "",
     category: "autre" as Category,
     isInstallment: false,
-    endDate: "",
-    totalAmount: "",
+    installment: emptyInstallment(),
   });
   const [newPrelevement, setNewPrelevement] = useState({
     title: "",
@@ -83,8 +59,7 @@ export default function Prelevement() {
     amount: "",
     category: "autre" as Category,
     isInstallment: false,
-    endDate: "",
-    totalAmount: "",
+    installment: emptyInstallment(),
   });
   const [showAddForm, setShowAddForm] = useState(false);
   const [showResetDialog, setShowResetDialog] = useState(false);
@@ -288,9 +263,8 @@ export default function Prelevement() {
       day: prelevement.day.toString(),
       amount: prelevement.amount.toString(),
       category: (prelevement.category || "autre") as Category,
-      isInstallment: !!(prelevement.endDate || prelevement.totalAmount),
-      endDate: prelevement.endDate ? new Date(prelevement.endDate).toISOString().split("T")[0] : "",
-      totalAmount: prelevement.totalAmount?.toString() || "",
+      isInstallment: isInstallment(prelevement),
+      installment: installmentFromPrelevement(prelevement),
     });
   };
 
@@ -309,11 +283,9 @@ export default function Prelevement() {
       day: newDay,
       amount: newAmount,
       category: editForm.category,
-      endDate: editForm.isInstallment && editForm.endDate ? editForm.endDate : null,
-      totalAmount:
-        editForm.isInstallment && editForm.totalAmount
-          ? Number.parseFloat(editForm.totalAmount)
-          : null,
+      ...(editForm.isInstallment
+        ? installmentToPayload(editForm.installment, newAmount)
+        : { endDate: null, totalAmount: null }),
     };
 
     // Optimistic update
@@ -361,14 +333,9 @@ export default function Prelevement() {
       day: Number.parseInt(newPrelevement.day),
       amount: Number.parseFloat(newPrelevement.amount),
       category: newPrelevement.category,
-      endDate:
-        newPrelevement.isInstallment && newPrelevement.endDate
-          ? newPrelevement.endDate
-          : null,
-      totalAmount:
-        newPrelevement.isInstallment && newPrelevement.totalAmount
-          ? Number.parseFloat(newPrelevement.totalAmount)
-          : null,
+      ...(newPrelevement.isInstallment
+        ? installmentToPayload(newPrelevement.installment, Number.parseFloat(newPrelevement.amount))
+        : { endDate: null, totalAmount: null }),
     };
 
     // Optimistic update with temporary ID
@@ -403,7 +370,7 @@ export default function Prelevement() {
       await queueAction("create", payload);
     }
 
-    setNewPrelevement({ title: "", day: "", amount: "", category: "autre", isInstallment: false, endDate: "", totalAmount: "" });
+    setNewPrelevement({ title: "", day: "", amount: "", category: "autre", isInstallment: false, installment: emptyInstallment() });
     setShowAddForm(false);
   };
 
@@ -613,24 +580,20 @@ export default function Prelevement() {
 
                     {/* Credit Progress Bar - Mobile */}
                     {(() => {
-                      const creditInfo = calculateInstallmentProgress(
-                        prelevement.endDate,
-                        prelevement.totalAmount,
-                        prelevement.amount
-                      );
-                      if (!creditInfo) return null;
+                    const creditInfo = getInstallmentInfo(prelevement);
+                    if (!creditInfo) return null;
                       return (
                         <div className="space-y-1">
                           <div className="flex items-center justify-between text-xs text-muted-foreground">
                             <span className="flex items-center gap-1">
                               <Calendar className="w-3 h-3" />
-                              {creditInfo.remainingMonths} mois restants
+                              {creditInfo.isFinished ? "Terminé" : `${creditInfo.remainingCount} échéance${creditInfo.remainingCount > 1 ? "s" : ""} restante${creditInfo.remainingCount > 1 ? "s" : ""} · fin ${formatMonth(creditInfo.lastMonth, true)}`}
                             </span>
                             <span>{creditInfo.progress}%</span>
                           </div>
                           <Progress value={creditInfo.progress} className="h-2" />
                           <div className="text-xs text-muted-foreground">
-                            {creditInfo.paidAmount.toFixed(0)}€ / {prelevement.totalAmount?.toFixed(0)}€
+                            {creditInfo.paidAmount.toFixed(0)}€ / {creditInfo.totalAmount.toFixed(0)}€
                           </div>
                         </div>
                       );
@@ -711,24 +674,20 @@ export default function Prelevement() {
                   </div>
                   {/* Credit Progress Bar - Desktop */}
                   {(() => {
-                    const creditInfo = calculateInstallmentProgress(
-                      prelevement.endDate,
-                      prelevement.totalAmount,
-                      prelevement.amount
-                    );
+                    const creditInfo = getInstallmentInfo(prelevement);
                     if (!creditInfo) return null;
                     return (
                       <div className="hidden lg:block mt-3 pt-3 border-t border-border/50">
                         <div className="flex items-center gap-4">
                           <div className="flex items-center gap-1 text-xs text-muted-foreground">
                             <Calendar className="w-3 h-3" />
-                            {creditInfo.remainingMonths} mois restants
+                            {creditInfo.isFinished ? "Terminé" : `${creditInfo.remainingCount} échéance${creditInfo.remainingCount > 1 ? "s" : ""} restante${creditInfo.remainingCount > 1 ? "s" : ""} · fin ${formatMonth(creditInfo.lastMonth, true)}`}
                           </div>
                           <div className="flex-1">
                             <Progress value={creditInfo.progress} className="h-2" />
                           </div>
                           <div className="text-xs text-muted-foreground min-w-[100px] text-right">
-                            {creditInfo.paidAmount.toFixed(0)}€ / {prelevement.totalAmount?.toFixed(0)}€ ({creditInfo.progress}%)
+                            {creditInfo.paidAmount.toFixed(0)}€ / {creditInfo.totalAmount.toFixed(0)}€ ({creditInfo.progress}%)
                           </div>
                         </div>
                       </div>
@@ -813,8 +772,7 @@ export default function Prelevement() {
               amount: "",
               category: "autre",
               isInstallment: false,
-              endDate: "",
-              totalAmount: "",
+              installment: emptyInstallment(),
             });
           }
         }}
@@ -930,42 +888,11 @@ export default function Prelevement() {
             </div>
 
             {newPrelevement.isInstallment && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4 pl-6">
-                <div className="space-y-1.5">
-                  <label className="text-sm font-medium">Date de fin</label>
-                  <Input
-                    type="date"
-                    value={newPrelevement.endDate}
-                    onChange={(e) =>
-                      setNewPrelevement({
-                        ...newPrelevement,
-                        endDate: e.target.value,
-                      })
-                    }
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Dernière mensualité prévue.
-                  </p>
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-sm font-medium">Montant total (€)</label>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    placeholder="Ex : 3600 pour un scooter"
-                    value={newPrelevement.totalAmount}
-                    onChange={(e) =>
-                      setNewPrelevement({
-                        ...newPrelevement,
-                        totalAmount: e.target.value,
-                      })
-                    }
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Coût total de l&apos;achat, toutes mensualités cumulées.
-                  </p>
-                </div>
-              </div>
+              <InstallmentFields
+                value={newPrelevement.installment}
+                onChange={(installment) => setNewPrelevement({ ...newPrelevement, installment })}
+                amount={newPrelevement.amount}
+              />
             )}
           </div>
 
@@ -1069,30 +996,11 @@ export default function Prelevement() {
               </div>
             </div>
             {editForm.isInstallment && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4 pl-6">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Date de fin</label>
-                  <Input
-                    type="date"
-                    value={editForm.endDate}
-                    onChange={(e) =>
-                      setEditForm({ ...editForm, endDate: e.target.value })
-                    }
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Montant total (€)</label>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    placeholder="Coût total de l'achat"
-                    value={editForm.totalAmount}
-                    onChange={(e) =>
-                      setEditForm({ ...editForm, totalAmount: e.target.value })
-                    }
-                  />
-                </div>
-              </div>
+              <InstallmentFields
+                value={editForm.installment}
+                onChange={(installment) => setEditForm({ ...editForm, installment })}
+                amount={editForm.amount}
+              />
             )}
           </div>
           <DialogFooter className="gap-2 sm:gap-0">

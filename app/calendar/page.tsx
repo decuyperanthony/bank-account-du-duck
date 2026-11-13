@@ -4,6 +4,7 @@ import { useEffect, useState, useMemo } from "react";
 import { PageLayout } from "@/components/layout/page-layout";
 import { CATEGORY_LABELS, CATEGORY_COLORS, type Category } from "@/lib/categories";
 import { cn } from "@/lib/utils";
+import { isActiveInMonth, toMonthIndex } from "@/lib/credits";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 type Prelevement = {
@@ -58,19 +59,12 @@ export default function CalendarPage() {
 
     // Grouper les prélèvements par jour (en filtrant les crédits terminés)
     const prelevementsByDay: Record<number, Prelevement[]> = {};
-    const currentMonthDate = new Date(year, month, 1);
 
     prelevements.forEach(p => {
       const day = p.day;
 
-      // Si le prélèvement a une date de fin, vérifier qu'elle n'est pas dépassée
-      if (p.endDate) {
-        const endDate = new Date(p.endDate);
-        // Ne pas afficher si le mois courant est après le mois de fin
-        if (currentMonthDate > new Date(endDate.getFullYear(), endDate.getMonth(), 1)) {
-          return;
-        }
-      }
+      // Crédits : n'afficher que pendant leurs mois d'échéance (avant la 1re, après la dernière : rien)
+      if (!isActiveInMonth({ ...p, completed: false }, toMonthIndex(year, month))) return;
 
       if (day >= 1 && day <= daysInMonth) {
         if (!prelevementsByDay[day]) {
