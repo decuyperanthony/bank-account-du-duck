@@ -13,6 +13,7 @@ import Link from "next/link";
 import { ROUTES } from "@/lib/routes";
 import { isActiveInMonth, monthIndexOf } from "@/lib/credits";
 import { EndingsTimeline } from "@/components/credits/credit-insights";
+import { MonthComparison } from "@/components/stats/month-comparison";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -182,6 +183,8 @@ export default function StatsPage() {
       <div className="max-w-lg mx-auto py-6 space-y-6">
         {/* Page Title */}
         <h1 className="text-2xl font-bold">Statistiques</h1>
+
+        <MonthComparison prelevements={prelevements} />
 
         {/* Reste à vivre - Hero card */}
         <div
