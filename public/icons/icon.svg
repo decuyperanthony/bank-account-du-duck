@@ -1,25 +1,37 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
   <defs>
-    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#2dd4bf"/>
-      <stop offset="100%" style="stop-color:#14b8a6"/>
+    <linearGradient id="bg" x1="0" y1="0" x2="512" y2="512" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#2a1a14"/>
+      <stop offset="1" stop-color="#0d0d0d"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="210" cy="190" r="300" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#D97757" stop-opacity="0.45"/>
+      <stop offset="1" stop-color="#D97757" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="duck" x1="120" y1="120" x2="380" y2="420" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFE7A3"/>
+      <stop offset="1" stop-color="#F5B83D"/>
+    </linearGradient>
+    <linearGradient id="beak" x1="330" y1="200" x2="420" y2="260" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#F08A5D"/>
+      <stop offset="1" stop-color="#D9573A"/>
     </linearGradient>
   </defs>
-  <!-- Background -->
-  <rect width="512" height="512" rx="96" fill="url(#bgGrad)"/>
-  <!-- Duck silhouette -->
-  <g transform="translate(56, 80)">
-    <!-- Body -->
-    <ellipse cx="200" cy="280" rx="160" ry="100" fill="white"/>
-    <!-- Head -->
-    <circle cx="320" cy="180" r="80" fill="white"/>
-    <!-- Beak -->
-    <path d="M380 180 L440 165 L440 195 L380 180 Z" fill="#fbbf24"/>
-    <!-- Eye -->
-    <circle cx="350" cy="165" r="12" fill="#0f172a"/>
-    <!-- Wing detail -->
-    <path d="M80 260 Q140 200 200 260 Q140 240 80 260 Z" fill="#e2e8f0"/>
-    <!-- Coin slot on body -->
-    <rect x="160" y="250" width="80" height="8" rx="4" fill="#0f172a" opacity="0.3"/>
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  <rect width="512" height="512" rx="112" fill="url(#glow)"/>
+  <!-- Canard -->
+  <g fill="url(#duck)">
+    <path d="M96 318c0-12 10-20 22-17 30 8 54 6 76-6 34-19 70-28 112-22 62 9 110 52 110 104 0 41-34 63-96 63H184c-55 0-88-46-88-122z"/>
+    <circle cx="262" cy="196" r="92"/>
   </g>
+  <!-- Bec -->
+  <path d="M338 192c28-8 60-6 84 8 7 4 6 14-1 17-25 12-57 14-83 6z" fill="url(#beak)"/>
+  <!-- Oeil -->
+  <circle cx="290" cy="174" r="16" fill="#141414"/>
+  <circle cx="295" cy="168" r="5.5" fill="#fff"/>
+  <!-- Aile -->
+  <path d="M180 352c34 30 92 32 132 2" stroke="#D99A2B" stroke-width="16" stroke-linecap="round"/>
+  <!-- Badge V2 -->
+  <rect x="318" y="372" width="134" height="84" rx="42" fill="#D97757" stroke="#0d0d0d" stroke-width="10"/>
+  <text x="385" y="431" text-anchor="middle" font-family="DejaVu Sans, Arial, sans-serif" font-weight="800" font-size="52" fill="#fff">V2</text>
 </svg>

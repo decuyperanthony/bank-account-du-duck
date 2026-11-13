@@ -2,20 +2,20 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Bank Account du Duck",
+  title: "Bank Account du Duck V2",
   description: "Gestion des prélèvements",
-  manifest: "/manifest.json",
+  manifest: "/manifest.json?v=2",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Duck Bank",
+    title: "Duck Bank V2",
   },
   icons: {
     icon: [
-      { url: "/icons/icon-32x32.png", sizes: "32x32", type: "image/png" },
-      { url: "/icons/icon-192x192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icons/icon-32x32.png?v=2", sizes: "32x32", type: "image/png" },
+      { url: "/icons/icon-192x192.png?v=2", sizes: "192x192", type: "image/png" },
     ],
-    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180" }],
+    apple: [{ url: "/apple-touch-icon.png?v=2", sizes: "180x180" }],
   },
 };
 

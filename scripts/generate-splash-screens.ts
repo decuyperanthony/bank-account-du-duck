@@ -1,5 +1,5 @@
 import sharp from "sharp";
-import { mkdirSync, existsSync } from "fs";
+import { readFileSync, mkdirSync, existsSync } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
 
@@ -30,19 +30,15 @@ const generateSplashScreens = async () => {
   }
 
   for (const { width, height, name } of SPLASH_SIZES) {
-    const svg = `
-      <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">
-        <rect width="100%" height="100%" fill="${THEME_COLOR}"/>
-        <g transform="translate(${width / 2 - 64}, ${height / 2 - 64})">
-          <ellipse cx="64" cy="90" rx="52" ry="32" fill="white"/>
-          <circle cx="103" cy="58" r="26" fill="white"/>
-          <path d="M123 58 L143 53 L143 63 L123 58 Z" fill="#fbbf24"/>
-          <circle cx="113" cy="53" r="4" fill="#0f172a"/>
-        </g>
-      </svg>
-    `;
+    // Icône V2 centrée sur fond sombre
+    const iconSize = Math.round(Math.min(width, height) * 0.32);
+    const icon = await sharp(readFileSync(join(publicDir, "icons", "icon.svg")))
+      .resize(iconSize, iconSize)
+      .png()
+      .toBuffer();
 
-    await sharp(Buffer.from(svg))
+    await sharp({ create: { width, height, channels: 4, background: "#0d0d0d" } })
+      .composite([{ input: icon, gravity: "center" }])
       .png()
       .toFile(join(splashDir, `${name}.png`));
 
