@@ -2,14 +2,14 @@
 
 import { type ReactNode } from "react";
 import { Header } from "./header";
-import { BottomNav } from "./bottom-nav";
+import { BottomNav, type NavTab } from "./bottom-nav";
 import { ConnectionStatus } from "@/components/ui/connection-status";
 import { cn } from "@/lib/utils";
 
 type PageLayoutProps = {
   children: ReactNode;
   onAddClick?: () => void;
-  activeTab?: "home" | "stats" | "credits" | "calendar" | "settings";
+  activeTab?: NavTab;
   showConnectionStatus?: boolean;
   className?: string;
   /** Petit texte affiché sous le titre du header, ex: le total à venir */
