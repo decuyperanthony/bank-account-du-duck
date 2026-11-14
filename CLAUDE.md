@@ -13,7 +13,12 @@ Application de gestion des prélèvements bancaires récurrents (abonnements, lo
 
 ## Commandes utiles
 
+Gestionnaire de paquets : **pnpm** (seul `pnpm-lock.yaml` est versionné).
+
 ```bash
+# Installer les dépendances
+pnpm install
+
 # Développement
 npm run dev
 

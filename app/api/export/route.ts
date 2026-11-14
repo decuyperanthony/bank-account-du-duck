@@ -1,9 +1,18 @@
 import { getDb } from "@/db";
-import { prelevements } from "@/db/schema";
+import { bankTransactions, importRules, monthlySnapshots, prelevements } from "@/db/schema";
 import { NextResponse } from "next/server";
 import { asc } from "drizzle-orm";
 
-// GET export all prelevements as JSON
+/** Lit une table optionnelle (absente tant que le schéma n'est pas poussé) */
+const safe = async <T,>(query: Promise<T[]>): Promise<T[]> => {
+  try {
+    return await query;
+  } catch {
+    return [];
+  }
+};
+
+// GET export complet (prélèvements, historique, règles, opérations importées) en JSON
 export async function GET() {
   try {
     const db = getDb();
@@ -12,20 +21,24 @@ export async function GET() {
       .from(prelevements)
       .orderBy(asc(prelevements.day), asc(prelevements.id));
 
-    const exportData = {
+    const [history, rules, transactions] = await Promise.all([
+      safe(db.select().from(monthlySnapshots).orderBy(asc(monthlySnapshots.month))),
+      safe(db.select().from(importRules)),
+      safe(db.select().from(bankTransactions).orderBy(asc(bankTransactions.date))),
+    ]);
+
+    return NextResponse.json({
       exportedAt: new Date().toISOString(),
       appName: "Bank Account du Duck",
-      version: "0.1.0",
+      version: "2.0.0",
       totalItems: data.length,
       prelevements: data,
-    };
-
-    return NextResponse.json(exportData);
+      history,
+      importRules: rules,
+      bankTransactions: transactions,
+    });
   } catch (error) {
     console.error("Error exporting data:", error);
-    return NextResponse.json(
-      { error: "Failed to export data" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to export data" }, { status: 500 });
   }
 }
