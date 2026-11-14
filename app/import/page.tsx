@@ -117,7 +117,7 @@ export default function ImportPage() {
       const rules: RuleLike[] = rulesRes.ok ? await rulesRes.json() : [];
       const prl: PrelevementLike[] = prlRes.ok ? await prlRes.json() : [];
       setPrelevements(prl);
-      setTxs(classifyTransactions(parsed.transactions, rules, prl));
+      setTxs(classifyTransactions(parsed.transactions, rules, prl, { holderName: parsed.holderName }));
       setSkipped(parsed.skippedLines);
       setFileName(file.name);
     } catch (e) {

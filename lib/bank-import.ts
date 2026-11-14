@@ -21,6 +21,8 @@ export type ParseResult = {
   format: "csv" | "ofx" | "pdf";
   transactions: RawTransaction[];
   skippedLines: number;
+  /** Titulaire du compte lu sur le relevé (ex : "ANTHONY DE CUYPER"), pour repérer les virements internes */
+  holderName?: string;
 };
 
 export type RuleLike = { id: number; pattern: string; action: ImportRuleAction; label: string };
@@ -249,10 +251,29 @@ const matchPrelevement = (tx: RawTransaction, list: PrelevementLike[]): Prelevem
   )[0];
 };
 
+const NAME_PARTICLES = new Set(["DE", "DU", "DES", "LA", "LE", "VAN", "VON", "DI"]);
+
+/**
+ * Virement entre ses propres comptes : libellé de virement qui contient le prénom
+ * ET le nom du titulaire ("VIR INST Anthony de Cuyper"). Un virement au seul nom
+ * de famille (ex : argent de poche des enfants) n'est pas concerné.
+ */
+export const isInternalTransfer = (label: string, holderName?: string): boolean => {
+  if (!holderName) return false;
+  const norm = normalizeLabel(label);
+  if (!/^VIR/.test(norm)) return false;
+  const words = new Set(norm.split(" "));
+  const tokens = normalizeLabel(holderName)
+    .split(" ")
+    .filter((t) => t.length >= 2 && !NAME_PARTICLES.has(t));
+  return tokens.length >= 2 && tokens.every((t) => words.has(t));
+};
+
 export const classifyTransactions = (
   transactions: RawTransaction[],
   rules: RuleLike[],
-  prelevements: PrelevementLike[]
+  prelevements: PrelevementLike[],
+  options: { holderName?: string } = {}
 ): ClassifiedTransaction[] =>
   transactions.map((tx) => {
     const norm = normalizeLabel(tx.label);
@@ -262,6 +283,9 @@ export const classifyTransactions = (
     });
     if (rule) {
       return { ...tx, kind: rule.action, tag: rule.label, prelevementId: null, amountDiff: null };
+    }
+    if (isInternalTransfer(tx.label, options.holderName)) {
+      return { ...tx, kind: "ignore", tag: "Virement interne", prelevementId: null, amountDiff: null };
     }
     const match = matchPrelevement(tx, prelevements);
     if (match) {
