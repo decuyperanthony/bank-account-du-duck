@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 type PageLayoutProps = {
   children: ReactNode;
   onAddClick?: () => void;
-  activeTab?: "home" | "stats" | "calendar" | "settings";
+  activeTab?: "home" | "stats" | "credits" | "calendar" | "settings";
   showConnectionStatus?: boolean;
   className?: string;
   /** Petit texte affiché sous le titre du header, ex: le total à venir */

@@ -9,6 +9,10 @@ import {
   CATEGORIES
 } from "@/lib/categories";
 import { cn } from "@/lib/utils";
+import Link from "next/link";
+import { ROUTES } from "@/lib/routes";
+import { isActiveInMonth, monthIndexOf } from "@/lib/credits";
+import { EndingsTimeline } from "@/components/credits/credit-insights";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -31,6 +35,8 @@ type Prelevement = {
   amount: number;
   category: string;
   completed: boolean;
+  endDate?: string | null;
+  totalAmount?: number | null;
 };
 
 type CategoryStats = {
@@ -120,7 +126,9 @@ export default function StatsPage() {
   };
 
   const stats = useMemo(() => {
-    const withCategory = prelevements.map(p => ({
+    // Les crédits terminés (ou pas encore commencés) ne comptent pas ce mois-ci
+    const currentMonth = monthIndexOf(new Date());
+    const withCategory = prelevements.filter(p => isActiveInMonth(p, currentMonth)).map(p => ({
       ...p,
       category: p.category || "autre"
     }));
@@ -404,6 +412,17 @@ export default function StatsPage() {
             </div>
           </div>
         )}
+
+        {/* Fins de prélèvements */}
+        <div className="bg-card rounded-2xl border border-border p-5 space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="font-semibold">Prochaines fins de prélèvements</h2>
+            <Link href={ROUTES.CREDITS} className="text-sm text-accent-primary font-medium">
+              Tout voir
+            </Link>
+          </div>
+          <EndingsTimeline prelevements={prelevements} limit={4} />
+        </div>
 
         {/* Category Breakdown */}
         <div>

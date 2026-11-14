@@ -152,7 +152,7 @@ export default function SettingsPage() {
             iconBg="bg-gray-500/20"
             iconColor="text-gray-400"
             title="À propos"
-            subtitle="Bank Account du Duck v0.1.0"
+            subtitle="Bank Account du Duck V2 (2.0.0)"
             action={
               <span className="text-xs text-muted-foreground">
                 Made with 🦆

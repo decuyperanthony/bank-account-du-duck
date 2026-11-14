@@ -1,14 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { Home, Plus, Settings, BarChart3, CalendarDays } from "lucide-react";
+import { Home, Plus, Settings, BarChart3, CalendarDays, Landmark } from "lucide-react";
 import { GlassBar } from "@/components/ui/glass-bar";
 import { cn } from "@/lib/utils";
 import { ROUTES } from "@/lib/routes";
 
 type BottomNavProps = {
   onAddClick?: () => void;
-  activeTab?: "home" | "stats" | "calendar" | "settings";
+  activeTab?: "home" | "stats" | "credits" | "calendar" | "settings";
 };
 
 export const BottomNav = ({ onAddClick, activeTab = "home" }: BottomNavProps) => {
@@ -59,6 +59,20 @@ export const BottomNav = ({ onAddClick, activeTab = "home" }: BottomNavProps) =>
             <Plus className="size-7" />
           </button>
         </div>
+
+        {/* Credits */}
+        <Link
+          href={ROUTES.CREDITS}
+          className={cn(
+            "flex flex-1 flex-col items-center gap-1 py-1 rounded-lg transition-colors",
+            activeTab === "credits"
+              ? "text-accent-primary"
+              : "text-muted-foreground hover:text-foreground"
+          )}
+        >
+          <Landmark className="size-5" />
+          <span className="text-[10px] font-medium">Crédits</span>
+        </Link>
 
         {/* Calendar */}
         <Link
