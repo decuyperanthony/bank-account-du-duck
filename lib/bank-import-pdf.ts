@@ -15,6 +15,7 @@ const AMOUNT_RE = /^\d{1,3}(?:[  ]\d{3})*,\d{2}$/;
 const DATE_RE = /^(\d{2})\.(\d{2})$/;
 const PERIOD_RE = /du (\d{2})\.(\d{2})\.(\d{4}) au (\d{2})\.(\d{2})\.(\d{4})/;
 const SKIP_LABEL_RE = /SOLDE|TOTAUX/i;
+const HOLDER_RE = /^(?:MONSIEUR|MADAME|MADEMOISELLE)\s+(.+)$/i;
 
 type Header = { valeurRight: number; creditLeft: number; labelLeft: number };
 
@@ -97,7 +98,13 @@ export const parseLclPdf = (pages: PdfItem[][]): ParseResult => {
     }
   }
 
-  return { format: "pdf", transactions: withHashes(list), skippedLines: skipped };
+  // Titulaire : bloc d'adresse en tête de relevé ("MONSIEUR PRENOM NOM")
+  const holderName = pages
+    .flat()
+    .map((i) => HOLDER_RE.exec(i.str.trim())?.[1])
+    .find((name) => name && name.split(/\s+/).length >= 2);
+
+  return { format: "pdf", transactions: withHashes(list), skippedLines: skipped, holderName };
 };
 
 /** Extrait le texte positionné de chaque page (pdf.js chargé à la demande) */
