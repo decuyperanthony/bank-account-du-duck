@@ -253,20 +253,29 @@ const matchPrelevement = (tx: RawTransaction, list: PrelevementLike[]): Prelevem
 
 const NAME_PARTICLES = new Set(["DE", "DU", "DES", "LA", "LE", "VAN", "VON", "DI"]);
 
+const TRANSFER_WORDS = new Set([
+  "VIR", "VIREMENT", "SEPA", "INST", "PERMANENT", "M", "MR", "MME", "MLLE", "MONSIEUR", "MADAME",
+]);
+
 /**
- * Virement entre ses propres comptes : libellé de virement qui contient le prénom
- * ET le nom du titulaire ("VIR INST Anthony de Cuyper"). Un virement au seul nom
- * de famille (ex : argent de poche des enfants) n'est pas concerné.
+ * Virement entre ses propres comptes (ex : LCL → Revolut) : libellé de virement
+ * dont le nom ne contient QUE des mots du titulaire, avec au moins son nom de
+ * famille. "VIR INST Anthony de Cuyper" ou "VIR.PERMANENT DE CUYPER" → interne ;
+ * "VIR INST M PATRICE DE CUYPER" (autre prénom) → pas interne.
  */
 export const isInternalTransfer = (label: string, holderName?: string): boolean => {
   if (!holderName) return false;
   const norm = normalizeLabel(label);
   if (!/^VIR/.test(norm)) return false;
-  const words = new Set(norm.split(" "));
-  const tokens = normalizeLabel(holderName)
-    .split(" ")
-    .filter((t) => t.length >= 2 && !NAME_PARTICLES.has(t));
-  return tokens.length >= 2 && tokens.every((t) => words.has(t));
+  const holder = normalizeLabel(holderName).split(" ").filter(Boolean);
+  const lastNames = holder.slice(1).filter((t) => !NAME_PARTICLES.has(t));
+  if (lastNames.length === 0) return false;
+  const rest = norm.split(" ").filter((w) => !TRANSFER_WORDS.has(w));
+  return (
+    rest.length > 0 &&
+    rest.every((w) => holder.includes(w)) &&
+    lastNames.every((t) => rest.includes(t))
+  );
 };
 
 export const classifyTransactions = (
