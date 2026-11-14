@@ -18,7 +18,7 @@ export type RawTransaction = {
 };
 
 export type ParseResult = {
-  format: "csv" | "ofx";
+  format: "csv" | "ofx" | "pdf";
   transactions: RawTransaction[];
   skippedLines: number;
 };
@@ -110,7 +110,7 @@ const detectSeparator = (lines: string[]): string => {
 };
 
 /** Ajoute une empreinte stable (les doublons exacts d'un même fichier sont numérotés) */
-const withHashes = (list: Omit<RawTransaction, "hash">[]): RawTransaction[] => {
+export const withHashes = (list: Omit<RawTransaction, "hash">[]): RawTransaction[] => {
   const seen = new Map<string, number>();
   return list.map((t) => {
     const base = `${t.date}|${normalizeLabel(t.label)}|${t.amount.toFixed(2)}`;
