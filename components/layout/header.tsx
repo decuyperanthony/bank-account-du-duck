@@ -1,7 +1,8 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { LogOut } from "lucide-react";
+import Link from "next/link";
+import { LogOut, Settings } from "lucide-react";
 import { GlassBar } from "@/components/ui/glass-bar";
 import { Button } from "@/components/ui/button";
 import { ROUTES } from "@/lib/routes";
@@ -34,7 +35,7 @@ export const Header = ({ subtitle }: HeaderProps = {}) => {
           />
           <div className="min-w-0">
             <h1 className="text-lg font-semibold text-foreground leading-tight">
-              Bank Account du Duck
+              Duck Bank
             </h1>
             {subtitle && (
               <p className="text-xs text-accent-primary font-medium leading-tight truncate">
@@ -43,14 +44,23 @@ export const Header = ({ subtitle }: HeaderProps = {}) => {
             )}
           </div>
         </div>
+        <div className="flex items-center gap-1">
+        <Link
+          href={ROUTES.SETTINGS}
+          aria-label="Réglages"
+          className="flex size-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-bg-tertiary hover:text-foreground"
+        >
+          <Settings className="size-5" />
+        </Link>
         <Button
           variant="ghost"
           size="icon"
           onClick={handleLogout}
-          aria-label="Logout"
+          aria-label="Se déconnecter"
         >
           <LogOut className="size-5" />
         </Button>
+        </div>
       </div>
     </GlassBar>
   );

@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import { ThemeProvider } from "@/components/theme-provider";
 
 export const metadata: Metadata = {
   title: "Bank Account du Duck V2",
@@ -20,7 +21,10 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#1a1a1a",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#F6F5F2" },
+    { media: "(prefers-color-scheme: dark)", color: "#1a1a1a" },
+  ],
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
@@ -34,9 +38,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="fr" className="dark">
+    <html lang="fr" suppressHydrationWarning>
       <head>
-        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=2" />
         <link
           rel="apple-touch-startup-image"
           href="/splash/iphone-x.png"
@@ -86,25 +90,11 @@ export default function RootLayout({
           aria-hidden="true"
         >
           <div className="splash-content">
-            <svg
-              width="96"
-              height="96"
-              viewBox="0 0 512 512"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-              className="splash-icon"
-            >
-              <g transform="translate(56, 80)">
-                <ellipse cx="200" cy="280" rx="160" ry="100" fill="white" />
-                <circle cx="320" cy="180" r="80" fill="white" />
-                <path d="M380 180 L440 165 L440 195 L380 180 Z" fill="#fbbf24" />
-                <circle cx="350" cy="165" r="12" fill="#0f172a" />
-                <path d="M80 260 Q140 200 200 260 Q140 240 80 260 Z" fill="#e2e8f0" />
-              </g>
-            </svg>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/icons/icon-192x192.png?v=2" alt="" width={96} height={96} className="splash-icon rounded-3xl" />
           </div>
         </div>
-        {children}
+        <ThemeProvider>{children}</ThemeProvider>
         <script src="/splash-hide.js" defer />
       </body>
     </html>

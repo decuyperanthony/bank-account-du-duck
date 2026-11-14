@@ -1,53 +1,55 @@
 "use client";
 
 import Link from "next/link";
-import { Home, Plus, Settings, BarChart3, CalendarDays, Landmark } from "lucide-react";
+import { Home, Plus, BarChart3, CalendarDays, Landmark } from "lucide-react";
 import { GlassBar } from "@/components/ui/glass-bar";
 import { cn } from "@/lib/utils";
 import { ROUTES } from "@/lib/routes";
 
+export type NavTab = "home" | "stats" | "credits" | "calendar" | "settings";
+
 type BottomNavProps = {
   onAddClick?: () => void;
-  activeTab?: "home" | "stats" | "credits" | "calendar" | "settings";
+  activeTab?: NavTab;
 };
+
+const NavLink = ({
+  href,
+  active,
+  icon,
+  label,
+}: {
+  href: string;
+  active: boolean;
+  icon: React.ReactNode;
+  label: string;
+}) => (
+  <Link
+    href={href}
+    aria-current={active ? "page" : undefined}
+    className={cn(
+      "flex flex-1 flex-col items-center gap-1 py-1 rounded-lg transition-colors",
+      active ? "text-accent-primary" : "text-muted-foreground hover:text-foreground"
+    )}
+  >
+    {icon}
+    <span className="text-[10px] font-medium">{label}</span>
+  </Link>
+);
 
 export const BottomNav = ({ onAddClick, activeTab = "home" }: BottomNavProps) => {
   return (
     <GlassBar position="bottom" as="nav">
       <div className="flex items-center px-2 py-3">
-        {/* Home */}
-        <Link
-          href={ROUTES.HOME}
-          className={cn(
-            "flex flex-1 flex-col items-center gap-1 py-1 rounded-lg transition-colors",
-            activeTab === "home"
-              ? "text-accent-primary"
-              : "text-muted-foreground hover:text-foreground"
-          )}
-        >
-          <Home className="size-5" />
-          <span className="text-[10px] font-medium">Accueil</span>
-        </Link>
+        <NavLink href={ROUTES.HOME} active={activeTab === "home"} icon={<Home className="size-5" />} label="Accueil" />
+        <NavLink href={ROUTES.CREDITS} active={activeTab === "credits"} icon={<Landmark className="size-5" />} label="Crédits" />
 
-        {/* Stats */}
-        <Link
-          href={ROUTES.STATS}
-          className={cn(
-            "flex flex-1 flex-col items-center gap-1 py-1 rounded-lg transition-colors",
-            activeTab === "stats"
-              ? "text-accent-primary"
-              : "text-muted-foreground hover:text-foreground"
-          )}
-        >
-          <BarChart3 className="size-5" />
-          <span className="text-[10px] font-medium">Stats</span>
-        </Link>
-
-        {/* Add button - elevated */}
+        {/* Bouton d'ajout surélevé */}
         <div className="flex flex-1 justify-center">
           <button
             type="button"
             onClick={onAddClick}
+            aria-label="Ajouter un prélèvement"
             className={cn(
               "flex items-center justify-center",
               "size-14 -mt-6 rounded-full",
@@ -60,47 +62,8 @@ export const BottomNav = ({ onAddClick, activeTab = "home" }: BottomNavProps) =>
           </button>
         </div>
 
-        {/* Credits */}
-        <Link
-          href={ROUTES.CREDITS}
-          className={cn(
-            "flex flex-1 flex-col items-center gap-1 py-1 rounded-lg transition-colors",
-            activeTab === "credits"
-              ? "text-accent-primary"
-              : "text-muted-foreground hover:text-foreground"
-          )}
-        >
-          <Landmark className="size-5" />
-          <span className="text-[10px] font-medium">Crédits</span>
-        </Link>
-
-        {/* Calendar */}
-        <Link
-          href={ROUTES.CALENDAR}
-          className={cn(
-            "flex flex-1 flex-col items-center gap-1 py-1 rounded-lg transition-colors",
-            activeTab === "calendar"
-              ? "text-accent-primary"
-              : "text-muted-foreground hover:text-foreground"
-          )}
-        >
-          <CalendarDays className="size-5" />
-          <span className="text-[10px] font-medium">Calendrier</span>
-        </Link>
-
-        {/* Settings */}
-        <Link
-          href={ROUTES.SETTINGS}
-          className={cn(
-            "flex flex-1 flex-col items-center gap-1 py-1 rounded-lg transition-colors",
-            activeTab === "settings"
-              ? "text-accent-primary"
-              : "text-muted-foreground hover:text-foreground"
-          )}
-        >
-          <Settings className="size-5" />
-          <span className="text-[10px] font-medium">Réglages</span>
-        </Link>
+        <NavLink href={ROUTES.CALENDAR} active={activeTab === "calendar"} icon={<CalendarDays className="size-5" />} label="Calendrier" />
+        <NavLink href={ROUTES.STATS} active={activeTab === "stats"} icon={<BarChart3 className="size-5" />} label="Stats" />
       </div>
     </GlassBar>
   );

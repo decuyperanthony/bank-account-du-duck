@@ -2,15 +2,16 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { PageLayout } from "@/components/layout/page-layout";
-import { Database, Palette, Download, Info, Sun, Moon, ChevronRight } from "lucide-react";
+import { Database, Palette, Download, Info, Sun, Moon, Monitor, ChevronRight } from "lucide-react";
+import { useTheme } from "next-themes";
 import { cn } from "@/lib/utils";
 
 type DbStatus = "checking" | "connected" | "disconnected";
-type Theme = "light" | "dark";
 
 export default function SettingsPage() {
   const [dbStatus, setDbStatus] = useState<DbStatus>("checking");
-  const [theme, setTheme] = useState<Theme>("dark");
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
 
   // Check database status
@@ -27,19 +28,8 @@ export default function SettingsPage() {
 
   useEffect(() => {
     checkDbStatus();
-    // Load theme preference from localStorage
-    const savedTheme = localStorage.getItem("theme") as Theme | null;
-    if (savedTheme) {
-      setTheme(savedTheme);
-    }
+    setMounted(true);
   }, [checkDbStatus]);
-
-  // Toggle theme (UI only - actual implementation pending)
-  const toggleTheme = () => {
-    const newTheme = theme === "dark" ? "light" : "dark";
-    setTheme(newTheme);
-    localStorage.setItem("theme", newTheme);
-  };
 
   // Export data
   const handleExport = async () => {
@@ -90,32 +80,40 @@ export default function SettingsPage() {
             }
           />
 
-          {/* Theme Toggle */}
-          <SettingsCard
-            icon={<Palette className="size-5" />}
-            iconBg="bg-violet-500/20"
-            iconColor="text-violet-400"
-            title="Thème"
-            subtitle="Apparence de l'app"
-            action={
-              <button
-                type="button"
-                onClick={toggleTheme}
-                className={cn(
-                  "flex items-center justify-center",
-                  "size-10 rounded-full",
-                  "bg-bg-tertiary hover:bg-border-default",
-                  "transition-colors"
-                )}
-              >
-                {theme === "dark" ? (
-                  <Moon className="size-5 text-violet-400" />
-                ) : (
-                  <Sun className="size-5 text-yellow-400" />
-                )}
-              </button>
-            }
-          />
+          {/* Thème */}
+          <div className="bg-card rounded-xl border border-border p-4 space-y-3">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center justify-center size-10 rounded-full bg-violet-500/20 text-violet-400">
+                <Palette className="size-5" />
+              </div>
+              <div>
+                <p className="font-medium">Thème</p>
+                <p className="text-sm text-muted-foreground">Apparence de l&apos;app</p>
+              </div>
+            </div>
+            <div className="grid grid-cols-3 gap-1 rounded-xl bg-bg-tertiary p-1">
+              {([
+                { value: "system", label: "Système", icon: <Monitor className="size-4" /> },
+                { value: "light", label: "Clair", icon: <Sun className="size-4" /> },
+                { value: "dark", label: "Sombre", icon: <Moon className="size-4" /> },
+              ] as const).map((opt) => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => setTheme(opt.value)}
+                  className={cn(
+                    "flex items-center justify-center gap-1.5 rounded-lg py-2 text-sm font-medium transition-colors",
+                    mounted && theme === opt.value
+                      ? "bg-card text-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  {opt.icon}
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
 
           {/* Export Data */}
           <SettingsCard
