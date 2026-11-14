@@ -12,6 +12,7 @@ import {
   type PrelevementLike,
   type RuleLike,
 } from "@/lib/bank-import";
+import { extractPdfItems, parseLclPdf } from "@/lib/bank-import-pdf";
 import { formatEuro } from "@/lib/credits";
 import { cn } from "@/lib/utils";
 
@@ -105,8 +106,8 @@ export default function ImportPage() {
     setDone(new Set());
     setBusy(true);
     try {
-      const text = await decodeFile(file);
-      const parsed = parseStatement(text);
+      const isPdf = file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
+      const parsed = isPdf ? parseLclPdf(await extractPdfItems(file)) : parseStatement(await decodeFile(file));
       if (parsed.transactions.length === 0) {
         setError("Aucune opération reconnue dans ce fichier. Envoie-le à Claude pour adapter l'import 🙂");
         setTxs([]);
@@ -226,15 +227,15 @@ export default function ImportPage() {
         <div>
           <h1 className="text-2xl font-bold">Importer un relevé</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Export CSV ou OFX de ton espace LCL. Le fichier est lu sur ton téléphone : seules les
-            opérations classées sont enregistrées.
+            Relevé de compte LCL en PDF (ou export CSV / OFX). Le fichier est lu sur ton téléphone :
+            seules les opérations classées sont enregistrées.
           </p>
         </div>
 
         <input
           ref={inputRef}
           type="file"
-          accept=".csv,.ofx,.txt,text/csv"
+          accept=".pdf,.csv,.ofx,.txt,application/pdf,text/csv"
           className="hidden"
           onChange={(e) => {
             const file = e.target.files?.[0];
@@ -251,7 +252,7 @@ export default function ImportPage() {
           <FileUp className="size-8 text-accent-primary" />
           <span className="font-semibold">{fileName ?? "Choisir un fichier"}</span>
           <span className="text-xs text-muted-foreground">
-            {fileName ? `${txs.length} opérations${skipped ? ` · ${skipped} lignes ignorées` : ""} · changer` : ".csv ou .ofx"}
+            {fileName ? `${txs.length} opérations${skipped ? ` · ${skipped} lignes ignorées` : ""} · changer` : ".pdf, .csv ou .ofx"}
           </span>
         </button>
 
@@ -305,6 +306,21 @@ export default function ImportPage() {
                 </>
               )}
             />
+
+            {by("unknown").length > 1 && (
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() =>
+                  setTxs((list) =>
+                    list.map((t) => (t.kind === "unknown" ? { ...t, kind: "ignore", tag: "Ponctuel" } : t))
+                  )
+                }
+              >
+                <EyeOff className="mr-2 size-4" />
+                Ignorer les {by("unknown").length} non reconnus restants
+              </Button>
+            )}
 
             <Group
               title="Rapprochés"
