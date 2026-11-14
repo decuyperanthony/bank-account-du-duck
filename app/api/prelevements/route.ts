@@ -2,11 +2,19 @@ import { getDb } from "@/db";
 import { prelevements } from "@/db/schema";
 import { NextResponse } from "next/server";
 import { asc } from "drizzle-orm";
+import { ensureMonthRollover } from "@/lib/monthly-rollover";
 
 // GET all prelevements
 export async function GET() {
   try {
     const db = getDb();
+    // Nouveau mois ? On archive le précédent et on décoche tout.
+    // Ne doit jamais casser la liste (ex : tables d'historique pas encore créées).
+    try {
+      await ensureMonthRollover(db);
+    } catch (error) {
+      console.error("Month rollover failed:", error);
+    }
     const result = await db
       .select()
       .from(prelevements)
