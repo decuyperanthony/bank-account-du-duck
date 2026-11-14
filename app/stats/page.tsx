@@ -14,6 +14,7 @@ import { ROUTES } from "@/lib/routes";
 import { isActiveInMonth, monthIndexOf } from "@/lib/credits";
 import { EndingsTimeline } from "@/components/credits/credit-insights";
 import { MonthComparison } from "@/components/stats/month-comparison";
+import { SpendingWatch } from "@/components/stats/spending-watch";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -185,6 +186,8 @@ export default function StatsPage() {
         <h1 className="text-2xl font-bold">Statistiques</h1>
 
         <MonthComparison prelevements={prelevements} />
+
+        <SpendingWatch />
 
         {/* Reste à vivre - Hero card */}
         <div

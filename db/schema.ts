@@ -54,3 +54,40 @@ export const appMeta = pgTable("app_meta", {
 });
 
 export type MonthlySnapshot = typeof monthlySnapshots.$inferSelect;
+
+/**
+ * Règles appliquées à l'import du relevé : le libellé bancaire contient `pattern`
+ * → l'opération est ignorée, surveillée (écarts) ou comptée en dépense variable.
+ */
+export const IMPORT_RULE_ACTIONS = ["ignore", "watch", "variable"] as const;
+export type ImportRuleAction = (typeof IMPORT_RULE_ACTIONS)[number];
+
+export const importRules = pgTable("import_rules", {
+  id: serial("id").primaryKey(),
+  pattern: text("pattern").notNull(),
+  action: text("action").$type<ImportRuleAction>().notNull(),
+  label: text("label").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+/** Opérations importées depuis un relevé bancaire */
+export const TRANSACTION_KINDS = ["matched", "ignore", "watch", "variable", "unknown", "income"] as const;
+export type TransactionKind = (typeof TRANSACTION_KINDS)[number];
+
+export const bankTransactions = pgTable("bank_transactions", {
+  id: serial("id").primaryKey(),
+  /** Empreinte date|libellé|montant|n° pour ne pas importer deux fois la même opération */
+  hash: text("hash").notNull().unique(),
+  date: text("date").notNull(), // "YYYY-MM-DD"
+  label: text("label").notNull(),
+  /** Convention de l'app : positif = dépense, négatif = rentrée */
+  amount: real("amount").notNull(),
+  kind: text("kind").$type<TransactionKind>().notNull(),
+  /** Libellé de la règle ou du prélèvement rapproché */
+  tag: text("tag"),
+  prelevementId: integer("prelevement_id"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export type ImportRule = typeof importRules.$inferSelect;
+export type BankTransaction = typeof bankTransactions.$inferSelect;

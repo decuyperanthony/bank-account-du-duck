@@ -3,6 +3,7 @@ export const ROUTES = {
   STATS: "/stats",
   CALENDAR: "/calendar",
   CREDITS: "/credits",
+  IMPORT: "/import",
   LOGIN: "/login",
   SETTINGS: "/settings",
 } as const;
